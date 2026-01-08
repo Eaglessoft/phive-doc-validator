@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Compliance Check</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Document Compliance Check</h1>
+                <p class="subtitle">Validate your XML documents according to Peppol and EN16931 standards</p>
+            </div>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <div class="card">
+                    <h2>Upload and Validate File</h2>
+                    
+                    <form id="validationForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <div class="input-method-selector">
+                                <label class="method-tab" for="fileMethod">
+                                    <input type="radio" name="inputMethod" value="file" id="fileMethod">
+                                    <span class="method-tab-content">
+                                        <span class="method-icon">📤</span>
+                                        <span class="method-text">Upload File</span>
+                                    </span>
+                                </label>
+                                <label class="method-tab active" for="pasteMethod">
+                                    <input type="radio" name="inputMethod" value="paste" id="pasteMethod" checked>
+                                    <span class="method-tab-content">
+                                        <span class="method-icon">📋</span>
+                                        <span class="method-text">Paste Content</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="pasteContentGroup">
+                            <div class="textarea-wrapper">
+                                <div class="line-numbers" id="lineNumbers"></div>
+                                <textarea id="pasteContent" name="pasteContent" rows="15" placeholder="Paste your XML content here..." class="paste-textarea"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="fileUploadGroup" style="display: none;">
+                            <label for="fileInput" class="file-label">
+                                <span class="file-icon">📄</span>
+                                <span class="file-text" id="fileText">Select XML file</span>
+                                <input type="file" id="fileInput" name="file" accept=".xml">
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ruleSelect">Validation Rule:</label>
+                            <div class="custom-select-wrapper">
+                                <div class="custom-select-trigger" id="ruleSelectTrigger">
+                                    <span id="ruleSelectText">Select a rule...</span>
+                                    <span class="select-arrow">▼</span>
+                                </div>
+                                <div class="custom-select-dropdown" id="ruleDropdown" style="display: none;">
+                                    <div class="rule-search-in-dropdown">
+                                        <input type="text" 
+                                               id="ruleSearch" 
+                                               placeholder="Search rules..." 
+                                               autocomplete="off">
+                                        <span class="search-icon">🔍</span>
+                                    </div>
+                                    <div class="rule-filter-options">
+                                        <label class="filter-checkbox-label">
+                                            <input type="checkbox" id="hideDeprecatedRules" checked>
+                                            <span>Hide deprecated rules</span>
+                                        </label>
+                                    </div>
+                                    <div class="rule-list" id="ruleList">
+                                        <div class="rule-loading">Loading...</div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="ruleSelect" name="rule" required>
+                            </div>
+                            <small class="help-text">Filter by searching or select from the list</small>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="btn-primary" disabled>
+                            <span class="btn-text">Validate</span>
+                            <span class="btn-loader" style="display: none;">⏳</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="resultSection" class="result-section" style="display: none;">
+                <div class="card">
+                    <h2>Validation Results</h2>
+                    <div id="resultContent"></div>
+                </div>
+            </div>
+
+            <div id="errorSection" class="error-section" style="display: none;">
+                <div class="card error-card">
+                    <h2>❌ Error</h2>
+                    <div id="errorContent"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <p class="footer-brand">Eaglessoft</p>
+                <p class="footer-tech">Powered by <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer" class="footer-link">Phive</a> (Philip Helger)</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+

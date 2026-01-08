@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.phive</groupId>
+  <artifactId>phive-validation-api</artifactId>
+  <version>1.0.0</version>
+  <packaging>war</packaging>
+
+  <name>PHIVE Validation API</name>
+  <description>REST API service for PHIVE document validation</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <failOnMissingWebXml>false</failOnMissingWebXml>
+    
+    <!-- PHIVE versions -->
+    <phive.version>11.1.1</phive.version>
+    <phive-rules.version>4.1.2</phive-rules.version>
+    
+    <!-- Servlet API -->
+    <servlet-api.version>4.0.1</servlet-api.version>
+    
+    <!-- Maven plugins -->
+    <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
+    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+  </properties>
+
+  <dependencies>
+    <!-- PHIVE Core -->
+    <dependency>
+      <groupId>com.helger.phive</groupId>
+      <artifactId>phive-api</artifactId>
+      <version>${phive.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive</groupId>
+      <artifactId>phive-xml</artifactId>
+      <version>${phive.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive</groupId>
+      <artifactId>phive-result</artifactId>
+      <version>${phive.version}</version>
+    </dependency>
+    
+    <!-- PHIVE Rules - EN16931 (required for Peppol) -->
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-en16931</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <!-- PHIVE Rules - Peppol -->
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-peppol</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <!-- Servlet API -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${servlet-api.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.12</version>
+    </dependency>
+    
+    <!-- JAXB Runtime Implementation (required for Tomcat) -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>4.0.4</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>phive-validation-api</finalName>
+    
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <source>17</source>
+          <target>17</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
+      
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>${maven.war.plugin.version}</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+
