@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Embedded PEPPOL E-Invoice Validator</title>
-    <link rel="stylesheet" href="embed.css">
+    <!-- CSS from GitHub Raw CDN (recommended) -->
+    <link rel="stylesheet" href="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.css">
+    
+    <!-- OR use local file if you prefer: -->
+    <!-- <link rel="stylesheet" href="embed.css"> -->
 </head>
 <body>
     <h1>Example Page with Embedded Validator</h1>
@@ -19,8 +23,12 @@
     <p>Content continues below the validator...</p>
     
     <!-- Load the validator JavaScript -->
-    <!-- API URL script tag'inde direkt yazılı olmalı (zorunlu) -->
-    <script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+    <!-- From GitHub Raw CDN (recommended) -->
+    <script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js" 
+            data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+    
+    <!-- OR use local file if you prefer: -->
+    <!-- <script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script> -->
 </body>
 </html>
 
