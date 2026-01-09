@@ -1,0 +1,10 @@
+target/
+.git/
+.gitignore
+*.iml
+.idea/
+*.log
+output/
+phive/
+phive-rules/
+
