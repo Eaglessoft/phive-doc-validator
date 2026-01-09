@@ -43,11 +43,12 @@ jobs:
         with:
           images: |
             eaglessoftbv/phive-doc-validator
+          flavor: |
+            latest=false
           tags: |
             type=raw,value=v1.0-${{ steps.commit.outputs.sha }}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
             type=ref,event=pr
-            type=sha,prefix={{branch}}-
 
       - name: Build and push
         id: docker_build
