@@ -26,7 +26,7 @@ No need to download files, use them directly from GitHub CDN:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Page</title>
     <!-- CSS from GitHub Raw CDN -->
-    <link rel="stylesheet" href="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.css">
+    <link rel="stylesheet" href="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.css?v=1.0">
 </head>
 <body>
     <h1>My Page</h1>
@@ -39,7 +39,7 @@ No need to download files, use them directly from GitHub CDN:
     <p>Other content...</p>
     
     <!-- JavaScript from GitHub Raw CDN - API URL must be directly written in script tag (required) -->
-    <script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js" 
+    <script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js?v=1.0" 
             data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 </body>
 </html>
@@ -63,7 +63,7 @@ Add the following files to your project:
 Add the CSS file to your page's `<head>` section:
 
 ```html
-<link rel="stylesheet" href="embed.css">
+<link rel="stylesheet" href="embed.css?v=1.0">
 ```
 
 Add the root container where you want to embed the validator in your page's `<body>` section:
@@ -77,7 +77,7 @@ Add the root container where you want to embed the validator in your page's `<bo
 Add the JavaScript file before your `</body>` tag. **API URL must be directly written in script tag (required)**:
 
 ```html
-<script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 ```
 
 #### 3. Complete Example
@@ -89,7 +89,7 @@ Add the JavaScript file before your `</body>` tag. **API URL must be directly wr
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Page</title>
-    <link rel="stylesheet" href="embed.css">
+    <link rel="stylesheet" href="embed.css?v=1.0">
 </head>
 <body>
     <h1>My Page</h1>
@@ -102,7 +102,7 @@ Add the JavaScript file before your `</body>` tag. **API URL must be directly wr
     <p>Other content...</p>
     
     <!-- API URL must be directly written in script tag (required) -->
-    <script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+    <script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 </body>
 </html>
 ```
@@ -112,7 +112,7 @@ Add the JavaScript file before your `</body>` tag. **API URL must be directly wr
 **IMPORTANT**: The API URL is not hardcoded in the code. It **must be directly written** in the script tag (required):
 
 ```html
-<script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 ```
 
 If the `data-api-url` attribute is not provided, the validator will not work and will log an error message to the console.
@@ -122,14 +122,14 @@ If the `data-api-url` attribute is not provided, the validator will not work and
 With GitHub Raw CDN:
 ```html
 <!-- From GitHub Raw CDN - Elegant and easy! -->
-<script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js" 
+<script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js?v=1.0" 
         data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 ```
 
 With local file:
 ```html
 <!-- When providing to company, API URL will be directly written in script tag -->
-<script src="embed.js" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
 ```
 
 ## Usage
