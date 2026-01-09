@@ -33,6 +33,10 @@ jobs:
           username: ${{ secrets.EAGLESSOFT_REPOSITORY_USERNAME }}
           password: ${{ secrets.EAGLESSOFT_REPOSITORY_SECRET }}
 
+      - name: Get short commit SHA
+        id: commit
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -40,10 +44,9 @@ jobs:
           images: |
             eaglessoftbv/phive-doc-validator
           tags: |
+            type=raw,value=v1.0-${{ steps.commit.outputs.sha }}
             type=ref,event=branch
             type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix={{branch}}-
 
       - name: Build and push
@@ -63,6 +66,7 @@ jobs:
         run: echo ${{ steps.docker_build.outputs.digest }}
 
       - name: Push Readme to Docker Hub
+        continue-on-error: true
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.EAGLESSOFT_REPOSITORY_USERNAME }}
