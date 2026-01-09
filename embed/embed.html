@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Embedded PEPPOL E-Invoice Validator</title>
-    <!-- CSS from GitHub Raw CDN (recommended) -->
-    <link rel="stylesheet" href="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.css?v=1.0">
     
-    <!-- OR use local file if you prefer: -->
-    <!-- <link rel="stylesheet" href="embed.css?v=1.0"> -->
+    <!-- PEPPOL Validator CSS from jsDelivr CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css">
 </head>
 <body>
     <h1>Example Page with Embedded Validator</h1>
@@ -23,12 +21,9 @@
     <p>Content continues below the validator...</p>
     
     <!-- Load the validator JavaScript -->
-    <!-- From GitHub Raw CDN (recommended) -->
-    <script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js?v=1.0" 
-            data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
-    
-    <!-- OR use local file if you prefer: -->
-    <!-- <script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script> -->
+    <!-- From jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js" 
+            data-api-url="YOUR_API_URL_HERE"></script>
 </body>
 </html>
 

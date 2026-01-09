@@ -29,13 +29,6 @@
                 <h2 class="peppol-validator-title">PEPPOL E-Invoice XML Document Validator</h2>
                 
                 <div class="peppol-input-method-selector">
-                    <label class="peppol-method-tab active" for="peppol-pasteMethod">
-                        <input type="radio" name="peppol-inputMethod" value="paste" id="peppol-pasteMethod" checked>
-                        <span class="peppol-method-tab-content">
-                            <span class="peppol-method-icon">📋</span>
-                            <span class="peppol-method-text">Paste Content</span>
-                        </span>
-                    </label>
                     <label class="peppol-method-tab" for="peppol-fileMethod">
                         <input type="radio" name="peppol-inputMethod" value="file" id="peppol-fileMethod">
                         <span class="peppol-method-tab-content">
@@ -43,10 +36,20 @@
                             <span class="peppol-method-text">Upload File</span>
                         </span>
                     </label>
+                    <label class="peppol-method-tab active" for="peppol-pasteMethod">
+                        <input type="radio" name="peppol-inputMethod" value="paste" id="peppol-pasteMethod" checked>
+                        <span class="peppol-method-tab-content">
+                            <span class="peppol-method-icon">📋</span>
+                            <span class="peppol-method-text">Paste Content</span>
+                        </span>
+                    </label>
                 </div>
                 
                 <div class="peppol-form-group" id="peppol-pasteContentGroup">
-                    <textarea id="peppol-pasteContent" rows="15" placeholder="Paste your XML content here..." class="peppol-textarea"></textarea>
+                    <div class="peppol-textarea-wrapper">
+                        <div class="peppol-line-numbers" id="peppol-lineNumbers"></div>
+                        <textarea id="peppol-pasteContent" rows="15" placeholder="Paste your XML content here..." class="peppol-textarea"></textarea>
+                    </div>
                 </div>
                 
                 <div class="peppol-form-group" id="peppol-fileUploadGroup" style="display: none;">
@@ -59,10 +62,32 @@
                 
                 <div class="peppol-form-group">
                     <label for="peppol-ruleSelect">Validation Rule:</label>
-                    <select id="peppol-ruleSelect" class="peppol-select">
-                        <option value="">Loading rules...</option>
-                    </select>
-                    <small class="peppol-help-text">Select a validation rule</small>
+                    <div class="peppol-custom-select-wrapper">
+                        <div class="peppol-custom-select-trigger" id="peppol-ruleSelectTrigger">
+                            <span id="peppol-ruleSelectText">Select a rule...</span>
+                            <span class="peppol-select-arrow">▼</span>
+                        </div>
+                        <div class="peppol-custom-select-dropdown" id="peppol-ruleDropdown" style="display: none;">
+                            <div class="peppol-rule-search-in-dropdown">
+                                <input type="text" 
+                                       id="peppol-ruleSearch" 
+                                       placeholder="Search rules..." 
+                                       autocomplete="off">
+                                <span class="peppol-search-icon">🔍</span>
+                            </div>
+                            <div class="peppol-rule-filter-options">
+                                <label class="peppol-filter-checkbox-label">
+                                    <input type="checkbox" id="peppol-hideDeprecatedRules" checked>
+                                    <span>Hide deprecated rules</span>
+                                </label>
+                            </div>
+                            <div class="peppol-rule-list" id="peppol-ruleList">
+                                <div class="peppol-rule-loading">Loading...</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="peppol-ruleSelect" name="rule" required>
+                    </div>
+                    <small class="peppol-help-text">Filter by searching or select from the list</small>
                 </div>
                 
                 <button type="button" id="peppol-submitBtn" class="peppol-btn-primary" disabled>
@@ -84,6 +109,13 @@
                     <div id="peppol-errorContent"></div>
                 </div>
             </div>
+            
+            <div class="peppol-footer">
+                <div class="peppol-footer-content">
+                    <p class="peppol-footer-brand">Eaglessoft</p>
+                    <p class="peppol-footer-tech">Powered by <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer" class="peppol-footer-link">Phive</a> (Philip Helger)</p>
+                </div>
+            </div>
         `;
         
         // Get DOM elements
@@ -95,6 +127,13 @@
         const pasteContentGroup = rootContainer.querySelector('#peppol-pasteContentGroup');
         const fileUploadGroup = rootContainer.querySelector('#peppol-fileUploadGroup');
         const ruleSelect = rootContainer.querySelector('#peppol-ruleSelect');
+        const ruleSelectTrigger = rootContainer.querySelector('#peppol-ruleSelectTrigger');
+        const ruleSelectText = rootContainer.querySelector('#peppol-ruleSelectText');
+        const ruleDropdown = rootContainer.querySelector('#peppol-ruleDropdown');
+        const ruleSearch = rootContainer.querySelector('#peppol-ruleSearch');
+        const ruleList = rootContainer.querySelector('#peppol-ruleList');
+        const hideDeprecatedRules = rootContainer.querySelector('#peppol-hideDeprecatedRules');
+        const lineNumbers = rootContainer.querySelector('#peppol-lineNumbers');
         const submitBtn = rootContainer.querySelector('#peppol-submitBtn');
         const resultSection = rootContainer.querySelector('#peppol-resultSection');
         const errorSection = rootContainer.querySelector('#peppol-errorSection');
@@ -104,6 +143,8 @@
         // State
         let currentXmlContent = '';
         let allRules = [];
+        let filteredRules = [];
+        let isDropdownOpen = false;
         
         // Setup event listeners
         function setupEventListeners() {
@@ -117,14 +158,172 @@
             // Paste content change
             pasteContent.addEventListener('input', () => {
                 currentXmlContent = pasteContent.value;
+                updateLineNumbers();
                 checkFormValidity();
             });
             
-            // Rule select change
-            ruleSelect.addEventListener('change', checkFormValidity);
+            // Sync scroll for line numbers
+            pasteContent.addEventListener('scroll', () => {
+                if (lineNumbers) {
+                    lineNumbers.scrollTop = pasteContent.scrollTop;
+                }
+            });
+            
+            // Sync scroll between textarea and line numbers
+            const textareaWrapper = rootContainer.querySelector('.peppol-textarea-wrapper');
+            if (textareaWrapper) {
+                textareaWrapper.addEventListener('scroll', () => {
+                    if (lineNumbers) {
+                        lineNumbers.scrollTop = textareaWrapper.scrollTop;
+                    }
+                });
+            }
+            
+            // Custom dropdown trigger
+            ruleSelectTrigger.addEventListener('click', toggleDropdown);
+            
+            // Rule search events
+            ruleSearch.addEventListener('input', handleRuleSearch);
+            ruleSearch.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            
+            // Hide deprecated rules checkbox
+            hideDeprecatedRules.addEventListener('change', handleDeprecatedFilterChange);
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!ruleSelectTrigger.contains(e.target) && !ruleDropdown.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+            
+            // Prevent dropdown from closing when clicking inside
+            ruleDropdown.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
             
             // Form submit
             submitBtn.addEventListener('click', handleFormSubmit);
+            
+            // Initialize line numbers
+            updateLineNumbers();
+        }
+        
+        // Update line numbers
+        function updateLineNumbers() {
+            if (!lineNumbers || !pasteContent) return;
+            
+            const lines = pasteContent.value.split('\n').length;
+            const scrollTop = pasteContent.scrollTop;
+            
+            let lineNumbersHtml = '';
+            for (let i = 1; i <= Math.max(lines, 15); i++) {
+                lineNumbersHtml += `<div class="peppol-line-number">${i}</div>`;
+            }
+            lineNumbers.innerHTML = lineNumbersHtml;
+            lineNumbers.scrollTop = scrollTop;
+        }
+        
+        // Toggle dropdown
+        function toggleDropdown() {
+            if (isDropdownOpen) {
+                closeDropdown();
+            } else {
+                openDropdown();
+            }
+        }
+        
+        // Open dropdown
+        function openDropdown() {
+            isDropdownOpen = true;
+            ruleSelectTrigger.classList.add('active');
+            ruleDropdown.style.display = 'flex';
+            ruleSearch.focus();
+            if (allRules.length > 0) {
+                const searchTerm = ruleSearch.value.toLowerCase().trim();
+                applyFilters(searchTerm);
+            }
+        }
+        
+        // Close dropdown
+        function closeDropdown() {
+            isDropdownOpen = false;
+            ruleSelectTrigger.classList.remove('active');
+            ruleDropdown.style.display = 'none';
+            ruleSearch.value = '';
+        }
+        
+        // Handle rule search
+        function handleRuleSearch(event) {
+            const searchTerm = event.target.value.toLowerCase().trim();
+            applyFilters(searchTerm);
+        }
+        
+        // Handle deprecated filter change
+        function handleDeprecatedFilterChange() {
+            const searchTerm = ruleSearch.value.toLowerCase().trim();
+            applyFilters(searchTerm);
+        }
+        
+        // Apply both search and deprecated filters
+        function applyFilters(searchTerm) {
+            let rules = [...allRules];
+            
+            // Apply search filter
+            if (searchTerm !== '') {
+                rules = rules.filter(rule => {
+                    const readableName = (rule.readableName || rule.name || rule.vesid || '').toLowerCase();
+                    const vesid = (rule.vesid || '').toLowerCase();
+                    return readableName.includes(searchTerm) || vesid.includes(searchTerm);
+                });
+            }
+            
+            // Apply deprecated filter
+            if (hideDeprecatedRules.checked) {
+                rules = rules.filter(rule => !rule.deprecated);
+            }
+            
+            filteredRules = rules;
+            renderRuleList(filteredRules);
+        }
+        
+        // Render rule list in dropdown
+        function renderRuleList(rules) {
+            ruleList.innerHTML = '';
+            
+            if (rules.length === 0) {
+                ruleList.innerHTML = '<div class="peppol-rule-empty">No results found</div>';
+                return;
+            }
+            
+            rules.forEach(rule => {
+                const item = document.createElement('div');
+                item.className = `peppol-rule-item ${rule.deprecated ? 'deprecated' : ''} ${ruleSelect.value === rule.vesid ? 'selected' : ''}`;
+                
+                const readableName = rule.readableName || rule.name || rule.vesid;
+                const vesid = rule.vesid;
+                
+                item.innerHTML = `
+                    <div class="peppol-rule-item-name">${escapeHtml(readableName)}</div>
+                    <div class="peppol-rule-item-vesid">${escapeHtml(vesid)}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    selectRule(rule);
+                });
+                
+                ruleList.appendChild(item);
+            });
+        }
+        
+        // Select a rule
+        function selectRule(rule) {
+            const readableName = rule.readableName || rule.name || rule.vesid;
+            ruleSelect.value = rule.vesid;
+            ruleSelectText.textContent = readableName;
+            closeDropdown();
+            checkFormValidity();
         }
         
         // Handle input method change
@@ -192,22 +391,17 @@
                 const data = await response.json();
                 
                 if (data.rules && data.rules.length > 0) {
-                    allRules = data.rules.filter(rule => !rule.deprecated);
-                    ruleSelect.innerHTML = '<option value="">Select a rule...</option>';
-                    
-                    allRules.forEach(rule => {
-                        const option = document.createElement('option');
-                        option.value = rule.vesid;
-                        option.textContent = rule.readableName || rule.name || rule.vesid;
-                        ruleSelect.appendChild(option);
-                    });
+                    allRules = data.rules;
+                    // Apply initial filters (deprecated filter is checked by default)
+                    applyFilters('');
+                    ruleSearch.placeholder = `${allRules.length} rules available - Search...`;
                 } else {
-                    ruleSelect.innerHTML = '<option value="">No rules found</option>';
+                    ruleList.innerHTML = '<div class="peppol-rule-empty">No rules found</div>';
                     showError('No rules found');
                 }
             } catch (error) {
                 console.error('Error loading rules:', error);
-                ruleSelect.innerHTML = '<option value="">Failed to load rules</option>';
+                ruleList.innerHTML = '<div class="peppol-rule-empty">Failed to load rules</div>';
                 showError('An error occurred while loading rules: ' + error.message);
             }
         }
@@ -221,6 +415,7 @@
             
             if (!rule) {
                 showError('Please select a validation rule');
+                ruleSelectTrigger.focus();
                 return;
             }
             

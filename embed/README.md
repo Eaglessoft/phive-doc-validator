@@ -1,201 +1,208 @@
-# PEPPOL E-Invoice XML Document Validator - Embed Guide
+# PEPPOL Validator - HTML Embed
 
-This documentation explains how to embed the PEPPOL E-Invoice XML Document Validator into your website.
+Bu validator'ı herhangi bir HTML sayfasına kolayca ekleyebilirsiniz. Kod GitHub üzerinden jsDelivr CDN ile sunulmaktadır.
 
-## Features
+## Hızlı Kurulum
 
-- 📄 Paste XML content directly
-- 📤 Upload XML files
-- ✅ Support for PEPPOL and EN16931 validation rules
-- 📊 Detailed validation results (errors and warnings)
-- 💾 Download JSON and XML results
-- 🎨 Modern design with Eaglessoft brand colors
-- 🔒 Scoped CSS and JavaScript (no global conflicts)
+### Adım 1: CSS'i Ekleyin
 
-## Installation
+Sayfanızın `<head>` bölümüne şu satırı ekleyin:
 
-### Method 1: GitHub Raw CDN (Recommended) 🚀
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css">
+```
 
-No need to download files, use them directly from GitHub CDN:
+### Adım 2: Container Div'i Ekleyin
+
+Validator'ın görünmesini istediğiniz yere şu div'i ekleyin:
+
+```html
+<div class="peppol-e-invoice-xml-document-validator"></div>
+```
+
+### Adım 3: JavaScript'i Ekleyin
+
+Sayfanızın `</body>` etiketinden önce şu script'i ekleyin:
+
+```html
+<script src="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js" 
+        data-api-url="YOUR_API_URL_HERE"></script>
+```
+
+**ÖNEMLİ:** `YOUR_API_URL_HERE` kısmını validator servisinizin base URL'i ile değiştirin.
+
+**Örnekler:**
+- Production: `https://tools.docnaut.com`
+- Local development: `http://localhost:8080`
+- Custom domain: `https://your-domain.com`
+
+**Not:** URL'in sonunda `/` olmamalı. Validator otomatik olarak `/list-rules` ve `/validate` endpoint'lerini ekler.
+
+## Tam HTML Örneği
 
 ```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Page</title>
-    <!-- CSS from GitHub Raw CDN -->
-    <link rel="stylesheet" href="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.css?v=1.0">
+    <title>PEPPOL Validator</title>
+    
+    <!-- PEPPOL Validator CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css">
 </head>
 <body>
-    <h1>My Page</h1>
+    <h1>PEPPOL E-Invoice XML Document Validator</h1>
     
-    <p>Validator below:</p>
-    
-    <!-- Validator container -->
+    <!-- PEPPOL Validator Container -->
     <div class="peppol-e-invoice-xml-document-validator"></div>
     
-    <p>Other content...</p>
-    
-    <!-- JavaScript from GitHub Raw CDN - API URL must be directly written in script tag (required) -->
-    <script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js?v=1.0" 
-            data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+    <!-- PEPPOL Validator JavaScript -->
+    <script src="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js" 
+            data-api-url="YOUR_API_URL_HERE"></script>
 </body>
 </html>
 ```
 
-**Note**: Update the GitHub repository URL and branch name according to your project.
+## WordPress Kullanımı
 
-### Method 2: Local Files
+### Elementor HTML Widget
 
-If you want to host the files on your own server:
-
-#### 1. Download Files
-
-Add the following files to your project:
-
-- `embed.css` - Scoped CSS styles for the validator
-- `embed.js` - Validator JavaScript code (IIFE format)
-
-#### 2. Add to HTML
-
-Add the CSS file to your page's `<head>` section:
+1. Elementor editöründe sayfayı düzenleyin
+2. **HTML Widget** ekleyin
+3. Aşağıdaki kodu yapıştırın:
 
 ```html
-<link rel="stylesheet" href="embed.css?v=1.0">
-```
+<!-- PEPPOL Validator CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css">
 
-Add the root container where you want to embed the validator in your page's `<body>` section:
+<!-- PEPPOL Validator Container -->
+<div class="peppol-e-invoice-xml-document-validator" style="margin: 20px 0; padding: 20px;"></div>
 
-```html
-<div class="peppol-e-invoice-xml-document-validator">
-    <!-- Validator will be automatically loaded here -->
-</div>
-```
-
-Add the JavaScript file before your `</body>` tag. **API URL must be directly written in script tag (required)**:
-
-```html
-<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
-```
-
-#### 3. Complete Example
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Page</title>
-    <link rel="stylesheet" href="embed.css?v=1.0">
-</head>
-<body>
-    <h1>My Page</h1>
+<!-- PEPPOL Validator JavaScript -->
+<script>
+(function() {
+    'use strict';
+    if (window.peppolValidatorLoaded) return;
+    window.peppolValidatorLoaded = true;
     
-    <p>Validator below:</p>
+    if (!document.querySelector('link[href*="embed.css"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css';
+        document.head.appendChild(link);
+    }
     
-    <!-- Validator container -->
-    <div class="peppol-e-invoice-xml-document-validator"></div>
-    
-    <p>Other content...</p>
-    
-    <!-- API URL must be directly written in script tag (required) -->
-    <script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
-</body>
-</html>
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js';
+    script.setAttribute('data-api-url', 'YOUR_API_URL_HERE');
+    script.async = true;
+    (document.body || document.documentElement).appendChild(script);
+})();
+</script>
 ```
 
-## API Endpoint
+### Custom HTML Widget
 
-**IMPORTANT**: The API URL is not hardcoded in the code. It **must be directly written** in the script tag (required):
+**Appearance → Widgets** bölümünden **Custom HTML** widget'ına şu kodu ekleyin:
 
 ```html
-<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css">
+<div class="peppol-e-invoice-xml-document-validator"></div>
+<script src="https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js" 
+        data-api-url="YOUR_API_URL_HERE"></script>
 ```
 
-If the `data-api-url` attribute is not provided, the validator will not work and will log an error message to the console.
+**Not**: Bazı WordPress temaları `<script>` tag'lerini widget'lardan kaldırır. Bu durumda Elementor HTML Widget yöntemini kullanın.
 
-**Usage examples**:
+### functions.php ile Kalıcı Kurulum
 
-With GitHub Raw CDN:
+WordPress `functions.php` dosyanıza şu kodu ekleyin:
+
+```php
+function peppol_validator_enqueue_styles() {
+    wp_enqueue_style('peppol-validator', 'https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css', array(), '1.0');
+}
+add_action('wp_enqueue_scripts', 'peppol_validator_enqueue_styles');
+
+function peppol_validator_enqueue_scripts() {
+    wp_enqueue_script('peppol-validator', 'https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js', array(), '1.0', true);
+    // Script'e data-api-url attribute'u ekle
+    add_filter('script_loader_tag', function($tag, $handle) {
+        if ($handle === 'peppol-validator') {
+            return str_replace('<script ', '<script data-api-url="YOUR_API_URL_HERE" ', $tag);
+        }
+        return $tag;
+    }, 10, 2);
+}
+add_action('wp_enqueue_scripts', 'peppol_validator_enqueue_scripts');
+```
+
+Sonra sayfanızda validator container'ı ekleyin:
+
 ```html
-<!-- From GitHub Raw CDN - Elegant and easy! -->
-<script src="https://raw.githubusercontent.com/eaglessoft/phive-doc-validator/main/embed/embed.js?v=1.0" 
-        data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
+<div class="peppol-e-invoice-xml-document-validator"></div>
 ```
 
-With local file:
-```html
-<!-- When providing to company, API URL will be directly written in script tag -->
-<script src="embed.js?v=1.0" data-api-url="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator"></script>
-```
+## Önemli Notlar
 
-## Usage
+1. **Container Div Zorunlu**: `.peppol-e-invoice-xml-document-validator` class'ına sahip bir div olmalı
+2. **API URL Zorunlu**: `data-api-url` attribute'u script tag'inde mutlaka olmalı ve gerçek API URL'iniz ile değiştirilmelidir
+3. **Sıralama**: CSS'i `<head>`'de, container'ı body'de, JS'i `</body>` öncesinde ekleyin
+4. **jsDelivr CDN**: Direkt `<link>` ve `<script>` tag'leri çalışır, doğru Content-Type header'ları ile sunar
 
-1. **Paste XML**: Select the "Paste Content" tab and paste XML content into the textarea
-2. **Upload File**: Select the "Upload File" tab and choose an XML file
-3. **Select Rule**: Choose a validation rule from the dropdown menu
-4. **Validate**: Click the "Validate" button
-5. **View Results**: Validation results are displayed within the same container
+## CDN URL'leri
 
-## Customization
+- CSS: `https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.css`
+- JS: `https://cdn.jsdelivr.net/gh/eaglessoft/phive-doc-validator@main/embed/embed.js`
 
-### CSS Customization
+## Sorun Giderme
 
-All CSS styles are scoped with the `.peppol-e-invoice-xml-document-validator` prefix, so they won't affect your page's other styles. You can customize colors and styles by editing the `embed.css` file if desired.
+- **Validator görünmüyor**: 
+  - Browser console'u kontrol edin (F12)
+  - Network sekmesinde CSS ve JS dosyalarının yüklendiğini kontrol edin
+  - `data-api-url` attribute'unun doğru API URL'i içerdiğinden emin olun
 
-### JavaScript Customization
+- **API URL hatası**: 
+  - `YOUR_API_URL_HERE` kısmını validator servisinizin base URL'i ile değiştirdiğinizden emin olun
+  - API URL'inin sonunda `/` olmamalı (örn: `https://tools.docnaut.com` ✅, `https://tools.docnaut.com/` ❌)
+  - Validator otomatik olarak `/list-rules` ve `/validate` endpoint'lerini ekler
+  - **Örnek API URL'leri:**
+    - Production: `https://tools.docnaut.com`
+    - Local: `http://localhost:8080`
+    - Custom: `https://your-domain.com`
 
-The JavaScript code is written in `(function(){})();` IIFE format and does not pollute the global scope. The code only works with elements inside the `.peppol-e-invoice-xml-document-validator` container.
+- **jsDelivr CDN Sorunları**: 
+  - jsDelivr genellikle sorunsuz çalışır
+  - Eğer dosyalar yüklenmiyorsa, GitHub repository'nin public olduğundan emin olun
+  - Branch adını kontrol edin (`main` branch kullanılıyor)
 
-## Browser Support
+- **WordPress Script Tag Sorunları**: 
+  - Bazı WordPress temaları widget'lardan `<script>` tag'lerini kaldırır
+  - Elementor HTML Widget yöntemini kullanın (IIFE ile script injection)
+  - Veya "Insert Headers and Footers" plugin'i kullanın
+  - Veya `functions.php` ile kalıcı kurulum yapın
 
-- Chrome (last 2 versions)
-- Firefox (last 2 versions)
-- Safari (last 2 versions)
-- Edge (last 2 versions)
+- **CSS çakışması**: 
+  - Validator CSS'i scoped olduğu için diğer stillerinizi etkilemez
+  - Tüm CSS class'ları `.peppol-e-invoice-xml-document-validator` ile başlar
 
-## Technical Details
+## Özellikler
 
-- **CSS**: All styles are scoped with `.peppol-e-invoice-xml-document-validator` prefix
-- **JavaScript**: IIFE format, does not pollute global scope
-- **API**: Uses RESTful API (POST /validate, GET /list-rules)
-- **File Format**: XML files and content are supported
+- ✅ Paste Content ve Upload File desteği
+- ✅ Line numbers ile XML editörü
+- ✅ Custom dropdown ile rule selection
+- ✅ Search ve deprecated filter
+- ✅ Detaylı validation sonuçları
+- ✅ JSON ve XML download desteği
+- ✅ Responsive tasarım
+- ✅ Scoped CSS (diğer stillerinizi etkilemez)
 
-## Troubleshooting
+## Dosyalar
 
-### Validator not visible
-
-- Make sure `embed.css` file is loaded
-- Make sure `embed.js` file is loaded
-- Make sure there is a div with `.peppol-e-invoice-xml-document-validator` class
-- Check the browser console for errors
-
-### API error
-
-- Check your internet connection
-- Make sure the API endpoint is accessible: `https://tools.docnaut.com/peppol-e-invoice-xml-document-validator`
-- If you're getting CORS errors, check the API server's CORS settings
-
-### Style issues
-
-- Check if there are conflicts with your page's CSS
-- Make sure `embed.css` file is loaded correctly
-- Check in browser developer tools if CSS is being applied
-
-## Support
-
-For questions or issues:
-
-- Visit [Eaglessoft](https://eaglessoft.com/) website
-- Contact us through [Eaglessoft Contact](https://eaglessoft.com/contact) page
-
-## License
-
-This validator is developed by [Eaglessoft](https://eaglessoft.com/).
-
----
-
-**Made with ❤️ by [Eaglessoft](https://eaglessoft.com/)**
+- `embed.js` - Validator JavaScript kodu
+- `embed.css` - Validator CSS stilleri
+- `embed.html` - Tam HTML örnek sayfası
+- `HTML_SNIPPET.html` - Basit HTML snippet örneği
+- `HTML_SNIPPET_WORDPRESS.html` - WordPress için snippet örneği
+- `SIMPLE_HTML_SNIPPET.html` - En basit snippet örneği

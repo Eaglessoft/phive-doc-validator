@@ -103,26 +103,61 @@
     font-size: 0.95rem;
 }
 
-/* Textarea */
-.peppol-textarea {
-    width: 100%;
-    padding: 12px 15px;
+/* Textarea Wrapper */
+.peppol-textarea-wrapper {
+    position: relative;
+    display: flex;
     border: 2px solid #e2e8f0;
     border-radius: 8px;
     background: rgba(103, 148, 241, 0.03);
+    transition: border-color 0.3s;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.peppol-textarea-wrapper:focus-within {
+    border-color: #6794f1;
+    box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
+}
+
+/* Line Numbers */
+.peppol-line-numbers {
+    background: rgba(103, 148, 241, 0.05);
+    padding: 12px 8px;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: #64748b;
+    user-select: none;
+    min-width: 40px;
+    border-right: 1px solid #e2e8f0;
+    overflow: hidden;
+    line-height: 1.6;
+}
+
+.peppol-line-number {
+    padding: 0 4px;
+    min-height: 1.6em;
+}
+
+/* Textarea */
+.peppol-textarea {
+    flex: 1;
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    background: transparent;
     font-size: 0.95rem;
     font-family: 'Courier New', monospace;
     color: #1e293b;
-    resize: vertical;
+    resize: none;
     min-height: 200px;
-    transition: border-color 0.3s;
+    max-height: none;
+    transition: none;
     line-height: 1.6;
     outline: none;
-}
-
-.peppol-textarea:focus {
-    border-color: #6794f1;
-    box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
+    overflow-y: auto;
 }
 
 .peppol-textarea::placeholder {
@@ -177,8 +212,13 @@
     color: #6794f1;
 }
 
-/* Select */
-.peppol-select {
+/* Custom Select */
+.peppol-custom-select-wrapper {
+    position: relative;
+    z-index: 10000;
+}
+
+.peppol-custom-select-trigger {
     width: 100%;
     padding: 12px 40px 12px 15px;
     border: 2px solid #e2e8f0;
@@ -187,18 +227,212 @@
     font-size: 1rem;
     color: #1e293b;
     cursor: pointer;
-    appearance: none;
     transition: border-color 0.3s;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 15px center;
-    background-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.peppol-select:focus {
-    outline: none;
+.peppol-custom-select-trigger:hover {
+    border-color: #6794f1;
+}
+
+.peppol-custom-select-trigger.active {
     border-color: #6794f1;
     box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
+}
+
+.peppol-select-arrow {
+    transition: transform 0.3s;
+}
+
+.peppol-custom-select-trigger.active .peppol-select-arrow {
+    transform: rotate(180deg);
+}
+
+.peppol-custom-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 400px;
+    overflow: hidden;
+    z-index: 9999;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+}
+
+.peppol-rule-search-in-dropdown {
+    position: relative;
+    padding: 10px;
+    border-bottom: 2px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.peppol-rule-search-in-dropdown #peppol-ruleSearch {
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 0.95rem;
+    color: #1e293b;
+    transition: border-color 0.3s;
+}
+
+.peppol-rule-search-in-dropdown #peppol-ruleSearch:focus {
+    outline: none;
+    border-color: #6794f1;
+    box-shadow: 0 0 0 2px rgba(103, 148, 241, 0.1);
+}
+
+.peppol-search-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.peppol-rule-filter-options {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    background: rgba(103, 148, 241, 0.03);
+}
+
+.peppol-filter-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.peppol-filter-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #6794f1;
+}
+
+.peppol-filter-checkbox-label:hover {
+    color: #6794f1;
+}
+
+.peppol-rule-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px 0;
+}
+
+.peppol-rule-item {
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.peppol-rule-item:last-child {
+    border-bottom: none;
+}
+
+.peppol-rule-item:hover {
+    background: rgba(103, 148, 241, 0.05);
+}
+
+.peppol-rule-item.selected {
+    background: rgba(103, 148, 241, 0.1);
+    border-left: 3px solid #6794f1;
+}
+
+.peppol-rule-item-name {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.peppol-rule-item-vesid {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.peppol-rule-item.deprecated {
+    opacity: 0.7;
+}
+
+.peppol-rule-item.deprecated .peppol-rule-item-name::after {
+    content: " (Deprecated)";
+    color: #f59e0b;
+    font-size: 0.85rem;
+    font-weight: normal;
+}
+
+.peppol-rule-loading,
+.peppol-rule-empty {
+    padding: 20px;
+    text-align: center;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* Footer */
+.peppol-footer {
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 40px;
+    padding: 30px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.peppol-footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.peppol-footer p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.peppol-footer-brand {
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.peppol-footer-tech {
+    font-size: 0.75rem;
+    color: #64748b;
+    opacity: 0.8;
+}
+
+.peppol-footer-link {
+    color: #6794f1;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.peppol-footer-link:hover {
+    color: #063389;
+    text-decoration: underline;
 }
 
 .peppol-help-text {
