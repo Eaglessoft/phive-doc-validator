@@ -1,7 +1,4 @@
-// API base URL - include context path
-const pathname = window.location.pathname;
-const contextPath = pathname.substring(0, pathname.lastIndexOf('/')) || '';
-const API_BASE_URL = window.location.origin + contextPath;
+// Base tag is set in HTML, so we use relative paths for API calls
 
 // DOM elements
 const fileInput = document.getElementById('fileInput');
@@ -241,7 +238,7 @@ function closeDropdown() {
 // Load available rules from API
 async function loadRules() {
     try {
-        const response = await fetch(`${API_BASE_URL}/list-rules`);
+        const response = await fetch('list-rules');
         if (!response.ok) {
             throw new Error('Failed to load rules');
         }
@@ -408,7 +405,7 @@ async function handleFormSubmit(event) {
             }
         }
         
-        const response = await fetch(`${API_BASE_URL}/validate`, {
+        const response = await fetch('validate', {
             method: 'POST',
             body: formData
         });

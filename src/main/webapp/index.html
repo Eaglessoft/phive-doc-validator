@@ -3,22 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- Base href will be set dynamically by JavaScript -->
-    <base id="baseTag" href="/">
-    <script>
-        // Set base href dynamically based on current pathname
-        (function() {
-            const pathname = window.location.pathname;
-            // Remove trailing slash and filename, keep context path
-            const basePath = pathname.substring(0, pathname.lastIndexOf('/')) || '/';
-            const baseTag = document.getElementById('baseTag');
-            if (baseTag) {
-                baseTag.href = basePath.endsWith('/') ? basePath : basePath + '/';
-            }
-        })();
-    </script>
-    
+    <base id="baseTag" href="/peppol-e-invoice-xml-document-validator/">
+
     <!-- Primary Meta Tags -->
     <title>PEPPOL E-Invoice XML Document Validator | Eaglessoft</title>
     <meta name="title" content="PEPPOL E-Invoice XML Document Validator | Eaglessoft">
@@ -44,23 +32,23 @@
     <meta property="twitter:image" content="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator/sources/EAGLESSOFT-White@3x.png">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="sources/FAVICON.svg">
-    <link rel="alternate icon" type="image/x-icon" href="sources/favicon.ico">
-    <link rel="alternate icon" type="image/png" sizes="32x32" href="sources/favicon-32x32.png">
-    <link rel="alternate icon" type="image/png" sizes="16x16" href="sources/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="sources/apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
+    <link rel="icon" type="image/svg+xml" href="sources/FAVICON.svg?v=1.0">
+    <link rel="alternate icon" type="image/x-icon" href="sources/favicon.ico?v=1.0">
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="sources/favicon-32x32.png?v=1.0">
+    <link rel="alternate icon" type="image/png" sizes="16x16" href="sources/favicon-16x16.png?v=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="sources/apple-touch-icon.png?v=1.0">
+    <link rel="manifest" href="site.webmanifest?v=1.0">
     <meta name="theme-color" content="#063389">
     
     <!-- Fallback favicon if SVG not supported -->
-    <link rel="shortcut icon" href="sources/FAVICON.svg">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="shortcut icon" href="sources/FAVICON.svg?v=1.0">
+    <link rel="stylesheet" href="styles.css?v=1.0">
 </head>
 <body>
     <div class="top-bar">
         <div class="top-bar-content">
             <a href="https://eaglessoft.com/" target="_blank" rel="noopener noreferrer" class="logo-container">
-                <img src="sources/EAGLESSOFT-White@3x.png" alt="Eaglessoft Logo">
+                <img src="sources/EAGLESSOFT-White@3x.png?v=1.0" alt="Eaglessoft Logo">
             </a>
         </div>
     </div>
@@ -174,7 +162,7 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=1.0"></script>
 </body>
 </html>
 

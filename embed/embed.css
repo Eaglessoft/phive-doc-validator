@@ -12,6 +12,31 @@
     box-sizing: border-box;
 }
 
+/* Header Styles */
+.peppol-header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.peppol-header-content {
+    max-width: 100%;
+}
+
+.peppol-main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+    line-height: 1.2;
+}
+
+.peppol-subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
 /* Form Styles */
 .peppol-validator-form {
     background: #ffffff;
@@ -392,12 +417,13 @@
 /* Footer */
 .peppol-footer {
     background: #ffffff;
-    border-top: 1px solid #e2e8f0;
-    margin-top: 40px;
+    border-top: 2px solid #e2e8f0;
+    margin-top: 50px;
     padding: 30px 20px;
     text-align: center;
     position: relative;
     z-index: 1;
+    border-radius: 0 0 12px 12px;
 }
 
 .peppol-footer-content {
@@ -413,9 +439,10 @@
 }
 
 .peppol-footer-brand {
-    font-weight: 500;
+    font-weight: 600;
     color: #1e293b;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
 }
 
 .peppol-footer-tech {

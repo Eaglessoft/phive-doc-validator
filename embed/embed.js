@@ -25,8 +25,15 @@
     function initValidator() {
         // Build HTML structure
         rootContainer.innerHTML = `
+            <div class="peppol-header">
+                <div class="peppol-header-content">
+                    <h1 class="peppol-main-title">Document Compliance Check</h1>
+                    <p class="peppol-subtitle">Validate your XML documents according to Peppol and EN16931 standards</p>
+                </div>
+            </div>
+            
             <div class="peppol-validator-form">
-                <h2 class="peppol-validator-title">PEPPOL E-Invoice XML Document Validator</h2>
+                <h2 class="peppol-validator-title">Upload and Validate File</h2>
                 
                 <div class="peppol-input-method-selector">
                     <label class="peppol-method-tab" for="peppol-fileMethod">
