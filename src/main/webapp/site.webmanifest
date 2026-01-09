@@ -1,0 +1,23 @@
+{
+  "name": "PEPPOL E-Invoice XML Document Validator",
+  "short_name": "PEPPOL Validator",
+  "description": "Validate your XML documents according to Peppol and EN16931 standards",
+  "icons": [
+    {
+      "src": "sources/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "sources/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#063389",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/peppol-e-invoice-xml-document-validator/",
+  "scope": "/peppol-e-invoice-xml-document-validator/"
+}
+

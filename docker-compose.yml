@@ -9,6 +9,8 @@ services:
     environment:
       - JAVA_OPTS=-Xss1m -Xmx512m -XX:+UseG1GC
       - CATALINA_OPTS=-Xss1m -Xmx512m -XX:+UseG1GC
+      # CORS: Comma-separated list of allowed origins (leave empty or unset to allow all origins)
+      - ALLOWED_ORIGINS=https://eaglessoft.com
     volumes:
       - ./output:/app/output
     restart: unless-stopped

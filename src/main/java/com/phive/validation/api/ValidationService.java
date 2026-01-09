@@ -59,6 +59,10 @@ public class ValidationService extends HttpServlet
   // Thread-safe registry - initialized once
   private static final ValidationExecutorSetRegistry<IValidationSourceXML> VES_REGISTRY = new ValidationExecutorSetRegistry<> ();
   
+  // Allowed origins from environment variable (comma-separated)
+  private static final String ALLOWED_ORIGINS_ENV = System.getenv ("ALLOWED_ORIGINS");
+  private static final String [] ALLOWED_ORIGINS = parseAllowedOrigins (ALLOWED_ORIGINS_ENV);
+  
   static
   {
     // Initialize EN 16931 validation rules first (required for Peppol)
@@ -67,14 +71,95 @@ public class ValidationService extends HttpServlet
     // Initialize all Peppol validation rules
     PeppolValidation.initStandard (VES_REGISTRY);
     LOGGER.info ("PHIVE Validation Service initialized with " + VES_REGISTRY.getAll ().size () + " validation rule sets");
+    
+    if (ALLOWED_ORIGINS_ENV != null && !ALLOWED_ORIGINS_ENV.isEmpty ())
+    {
+      LOGGER.info ("CORS: Allowed origins configured: " + ALLOWED_ORIGINS_ENV);
+    }
+    else
+    {
+      LOGGER.info ("CORS: No ALLOWED_ORIGINS environment variable set, allowing all origins (*)");
+    }
+  }
+  
+  /**
+   * Parse allowed origins from environment variable
+   * Format: "https://domain1.com,https://domain2.com,https://domain3.com"
+   */
+  private static String [] parseAllowedOrigins (final String envValue)
+  {
+    if (envValue == null || envValue.trim ().isEmpty ())
+    {
+      return null; // Allow all origins
+    }
+    
+    final String [] origins = envValue.split (",");
+    // Trim whitespace from each origin
+    for (int i = 0; i < origins.length; i++)
+    {
+      origins[i] = origins[i].trim ();
+    }
+    return origins;
+  }
+  
+  /**
+   * Set CORS headers based on allowed origins
+   */
+  private void setCorsHeaders (final HttpServletRequest request, final HttpServletResponse response)
+  {
+    final String origin = request.getHeader ("Origin");
+    
+    // If no allowed origins configured, allow all
+    if (ALLOWED_ORIGINS == null)
+    {
+      response.setHeader ("Access-Control-Allow-Origin", "*");
+    }
+    else
+    {
+      // Check if origin is in allowed list
+      boolean isAllowed = false;
+      if (origin != null && !origin.isEmpty ())
+      {
+        for (final String allowedOrigin : ALLOWED_ORIGINS)
+        {
+          if (origin.equals (allowedOrigin.trim ()))
+          {
+            isAllowed = true;
+            break;
+          }
+        }
+      }
+      
+      if (isAllowed)
+      {
+        response.setHeader ("Access-Control-Allow-Origin", origin);
+        response.setHeader ("Access-Control-Allow-Credentials", "true");
+      }
+      // If origin not allowed, don't set CORS headers (browser will block)
+    }
+    
+    // Set other CORS headers
+    response.setHeader ("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    response.setHeader ("Access-Control-Allow-Headers", "Content-Type, Accept, Origin, X-Requested-With");
+    response.setHeader ("Access-Control-Max-Age", "3600");
+  }
+  
+  @Override
+  protected void doOptions (final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
+  {
+    // Handle preflight requests
+    setCorsHeaders (request, response);
+    response.setStatus (HttpServletResponse.SC_OK);
   }
   
   @Override
   protected void doPost (final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
   {
+    // Set CORS headers
+    setCorsHeaders (request, response);
+    
     response.setContentType ("application/json");
     response.setCharacterEncoding (StandardCharsets.UTF_8.name ());
-    response.setHeader ("Access-Control-Allow-Origin", "*");
     
     final long nStartTime = System.nanoTime ();
     final IJsonObject aResponse = new JsonObject ();
@@ -213,10 +298,12 @@ public class ValidationService extends HttpServlet
     // Handle /list-rules endpoint
     if (pathInfo.equals ("/list-rules") || pathInfo.endsWith ("/list-rules"))
     {
+      // Set CORS headers
+      setCorsHeaders (request, response);
+      
       // List all available rules
       response.setContentType ("application/json");
       response.setCharacterEncoding (StandardCharsets.UTF_8.name ());
-      response.setHeader ("Access-Control-Allow-Origin", "*");
       
       final IJsonObject aResponse = new JsonObject ();
       final com.helger.json.IJsonArray aRules = new com.helger.json.JsonArray ();
@@ -243,10 +330,12 @@ public class ValidationService extends HttpServlet
     }
     else if (pathInfo.equals ("/api") || pathInfo.endsWith ("/api"))
     {
+      // Set CORS headers
+      setCorsHeaders (request, response);
+      
       // Health check or info
       response.setContentType ("application/json");
       response.setCharacterEncoding (StandardCharsets.UTF_8.name ());
-      response.setHeader ("Access-Control-Allow-Origin", "*");
       
       final IJsonObject aResponse = new JsonObject ();
       aResponse.add ("service", "PHIVE Validation API");

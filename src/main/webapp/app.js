@@ -1,5 +1,7 @@
-// API base URL
-const API_BASE_URL = window.location.origin;
+// API base URL - include context path
+const pathname = window.location.pathname;
+const contextPath = pathname.substring(0, pathname.lastIndexOf('/')) || '';
+const API_BASE_URL = window.location.origin + contextPath;
 
 // DOM elements
 const fileInput = document.getElementById('fileInput');

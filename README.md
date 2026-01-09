@@ -158,6 +158,28 @@ The `docker-compose.yml` file includes:
 - Health checks
 - Volume mounts for output files
 - Environment variables for JVM options
+- CORS configuration via `ALLOWED_ORIGINS` environment variable
+
+### CORS Configuration
+
+The service supports Cross-Origin Resource Sharing (CORS) for embed usage. Configure allowed origins using the `ALLOWED_ORIGINS` environment variable:
+
+**Format**: Comma-separated list of allowed origins
+```bash
+ALLOWED_ORIGINS=https://example.com,https://www.example.com,https://another-domain.com
+```
+
+**Examples**:
+
+- **Allow all origins** (default): Leave `ALLOWED_ORIGINS` unset or empty
+- **Allow specific domains**: Set `ALLOWED_ORIGINS=https://example.com,https://www.example.com`
+- **Docker Compose**: Add to `environment` section:
+  ```yaml
+  environment:
+    - ALLOWED_ORIGINS=https://example.com,https://www.example.com
+  ```
+
+**Note**: When `ALLOWED_ORIGINS` is set, only requests from the specified origins will be allowed. If unset, all origins are allowed (`*`).
 
 ### Customization
 
@@ -166,6 +188,7 @@ To customize the Docker setup:
 - Modify `Containerfile` for build changes
 - Update `docker-compose.yml` for runtime configuration
 - Adjust JVM options in `docker-compose.yml` if needed
+- Configure CORS via `ALLOWED_ORIGINS` environment variable
 
 ## Project Structure
 
