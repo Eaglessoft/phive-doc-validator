@@ -45,7 +45,7 @@ jobs:
             eaglessoftbv/phive-doc-validator
           tags: |
             type=raw,value=v1.0-${{ steps.commit.outputs.sha }}
-            type=ref,event=branch
+            type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=pr
             type=sha,prefix={{branch}}-
 
