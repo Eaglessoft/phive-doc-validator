@@ -114,6 +114,7 @@
         <version>${maven.war.plugin.version}</version>
         <configuration>
           <failOnMissingWebXml>false</failOnMissingWebXml>
+          <warSourceDirectory>src/main/webapp</warSourceDirectory>
         </configuration>
       </plugin>
     </plugins>
