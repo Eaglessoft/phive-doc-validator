@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- Base href will be set dynamically by JavaScript -->
+    <base id="baseTag" href="/">
+    <script>
+        // Set base href dynamically based on current pathname
+        (function() {
+            const pathname = window.location.pathname;
+            // Remove trailing slash and filename, keep context path
+            const basePath = pathname.substring(0, pathname.lastIndexOf('/')) || '/';
+            const baseTag = document.getElementById('baseTag');
+            if (baseTag) {
+                baseTag.href = basePath.endsWith('/') ? basePath : basePath + '/';
+            }
+        })();
+    </script>
+    
     <!-- Primary Meta Tags -->
     <title>PEPPOL E-Invoice XML Document Validator | Eaglessoft</title>
     <meta name="title" content="PEPPOL E-Invoice XML Document Validator | Eaglessoft">
@@ -27,8 +42,6 @@
     <meta property="twitter:title" content="PEPPOL E-Invoice XML Document Validator | Eaglessoft">
     <meta property="twitter:description" content="Validate your XML documents according to Peppol and EN16931 standards. Free online PEPPOL e-invoice validation tool.">
     <meta property="twitter:image" content="https://tools.docnaut.com/peppol-e-invoice-xml-document-validator/sources/EAGLESSOFT-White@3x.png">
-    
-    <base href="./">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="sources/FAVICON.svg">
