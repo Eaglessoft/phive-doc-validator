@@ -561,9 +561,25 @@ function displayResults(result) {
                     `;
                 });
             } else {
-                html += '<div class="validation-item success">';
-                html += '<div class="validation-item-message">All fine on this level</div>';
-                html += '</div>';
+                // Check if this validation was skipped due to previous validation errors
+                // If there are errors in previous validations (especially XML Schema), this one was skipped
+                const hasPreviousErrors = validationResults.slice(0, index).some(prevVr => {
+                    const prevArtifactType = (prevVr.artifactType || '').toUpperCase();
+                    // Check if previous validation is XML Schema and has errors
+                    return (prevArtifactType.includes('SCHEMA') || prevArtifactType.includes('XSD')) && prevVr.errors > 0;
+                });
+                
+                if (hasPreviousErrors) {
+                    // This validation was skipped
+                    html += '<div class="validation-item skipped">';
+                    html += '<div class="validation-item-message">⏭️ Skipped (previous validation failed)</div>';
+                    html += '</div>';
+                } else {
+                    // No errors in previous validations, so this one passed
+                    html += '<div class="validation-item success">';
+                    html += '<div class="validation-item-message">All fine on this level</div>';
+                    html += '</div>';
+                }
             }
             
             html += `</div>`;

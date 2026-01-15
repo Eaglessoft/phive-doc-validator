@@ -339,7 +339,7 @@ public class ValidationService extends HttpServlet
       
       final IJsonObject aResponse = new JsonObject ();
       aResponse.add ("service", "PHIVE Validation API");
-      aResponse.add ("version", "1.0.0");
+      aResponse.add ("version", "1.1.0");
       aResponse.add ("status", "running");
       aResponse.add ("availableRules", VES_REGISTRY.getAll ().size ());
       

@@ -27,7 +27,7 @@
         rootContainer.innerHTML = `
             <div class="peppol-header">
                 <div class="peppol-header-content">
-                    <h1 class="peppol-main-title">Document Compliance Check</h1>
+                    <h1 class="peppol-main-title">Peppol e-document Validator</h1>
                     <p class="peppol-subtitle">Validate your XML documents according to Peppol and EN16931 standards</p>
                 </div>
             </div>

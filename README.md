@@ -38,7 +38,11 @@ The easiest way to run the PHIVE Document Validator is using Docker Compose:
 docker-compose up --build
 ```
 
-The service will be available at `http://localhost:8080`
+The service will be available at:
+- `http://localhost/peppol-e-invoice-xml-document-validator/` (with context path)
+- `http://localhost/` (root path for local testing)
+
+The Apache reverse proxy handles routing and context path management automatically.
 
 The PHIVE libraries and rules are automatically downloaded as Maven dependencies during the build process. No manual cloning is required.
 
@@ -153,12 +157,31 @@ The project uses a multi-stage Docker build:
 
 The `docker-compose.yml` file includes:
 
+- **phive-validation-api**: The main validation service running on Tomcat (port 8080)
+- **apache**: Apache HTTP Server reverse proxy (port 80)
 - Service configuration
-- Port mapping (8080:8080)
 - Health checks
 - Volume mounts for output files
 - Environment variables for JVM options
 - CORS configuration via `ALLOWED_ORIGINS` environment variable
+- Network configuration for service communication
+
+### Apache Reverse Proxy
+
+The project includes an Apache HTTP Server reverse proxy configuration that handles context path routing. This allows the application to work correctly with the `/peppol-e-invoice-xml-document-validator/` context path while proxying requests to Tomcat's root context.
+
+**Configuration:**
+- Apache configuration file: `apache/httpd.conf`
+- Apache listens on port 80 (mapped from container)
+- Tomcat service runs on port 8080 (internal network only)
+- Context path `/peppol-e-invoice-xml-document-validator/` is automatically handled
+- Root path `/` also works for local testing
+
+**Access Points:**
+- `http://localhost/peppol-e-invoice-xml-document-validator/` - With context path
+- `http://localhost/` - Root path (for local testing)
+
+The Apache reverse proxy automatically removes the context path prefix when forwarding requests to Tomcat, ensuring seamless operation without modifying the application code.
 
 ### CORS Configuration
 
@@ -207,6 +230,8 @@ phive-doc-validator/
 │   │       │   └── EAGLESSOFT-White@3x.png
 │   │       └── WEB-INF/
 │   │           └── web.xml
+├── apache/
+│   └── httpd.conf
 ├── Containerfile
 ├── docker-compose.yml
 ├── pom.xml

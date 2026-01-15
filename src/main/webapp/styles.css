@@ -834,6 +834,22 @@ select:focus {
     font-style: italic;
 }
 
+.validation-item.skipped {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #92400e;
+}
+
+.validation-item.skipped .validation-item-title {
+    color: #92400e;
+    font-weight: 600;
+}
+
+.validation-item.skipped .validation-item-message {
+    color: #78350f;
+    font-style: italic;
+}
+
 .validation-item-title {
     font-weight: 600;
     margin-bottom: 5px;
