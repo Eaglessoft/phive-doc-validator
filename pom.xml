@@ -6,16 +6,16 @@
 
   <groupId>com.phive</groupId>
   <artifactId>phive-validation-api</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <packaging>war</packaging>
 
   <name>PHIVE Validation API</name>
-  <description>REST API service for PHIVE document validation</description>
+  <description>REST API service for PHIVE document validation with comprehensive ruleset support (UBL, CII, EN16931, Peppol, XRechnung, ZUGFeRD, fatturaPA, and more)</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
     <failOnMissingWebXml>false</failOnMissingWebXml>
     
     <!-- PHIVE versions -->
@@ -25,9 +25,16 @@
     <!-- Servlet API -->
     <servlet-api.version>4.0.1</servlet-api.version>
     
+    <!-- Logging (keeping stable versions for compatibility) -->
+    <slf4j.version>1.7.36</slf4j.version>
+    <logback.version>1.2.12</logback.version>
+    
+    <!-- JAXB -->
+    <jaxb-runtime.version>4.0.6</jaxb-runtime.version>
+    
     <!-- Maven plugins -->
-    <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
-    <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+    <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
+    <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
   </properties>
 
   <dependencies>
@@ -50,17 +57,169 @@
       <version>${phive.version}</version>
     </dependency>
     
-    <!-- PHIVE Rules - EN16931 (required for Peppol) -->
+    <!-- PHIVE Rules - ALL MODULES from locally built phive-rules repository -->
+    
+    <!-- Core Standards -->
     <dependency>
       <groupId>com.helger.phive.rules</groupId>
       <artifactId>phive-rules-en16931</artifactId>
       <version>${phive-rules.version}</version>
     </dependency>
     
-    <!-- PHIVE Rules - Peppol -->
     <dependency>
       <groupId>com.helger.phive.rules</groupId>
       <artifactId>phive-rules-peppol</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-cii</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-ubl</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <!-- Country Specific Rules (All from phive-rules GitHub) -->
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-cius-pt</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-cius-ro</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-ebinterface</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-ehf</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-energieefactuur</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-eracun</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-facturae</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-fatturapa</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-finvoice</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-france</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-isdoc</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-ksef</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-oioubl</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-peppol-legacy</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-peppol-italy</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-setu</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-simplerinvoicing</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-svefaktura</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-teapps</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-ublbe</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-xrechnung</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-zatca</artifactId>
+      <version>${phive-rules.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.helger.phive.rules</groupId>
+      <artifactId>phive-rules-zugferd</artifactId>
       <version>${phive-rules.version}</version>
     </dependency>
     
@@ -76,20 +235,20 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.36</version>
+      <version>${slf4j.version}</version>
     </dependency>
     
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.2.12</version>
+      <version>${logback.version}</version>
     </dependency>
     
     <!-- JAXB Runtime Implementation (required for Tomcat) -->
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
-      <version>4.0.4</version>
+      <version>${jaxb-runtime.version}</version>
     </dependency>
   </dependencies>
 
@@ -102,8 +261,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>17</source>
-          <target>17</target>
+          <source>21</source>
+          <target>21</target>
           <encoding>UTF-8</encoding>
         </configuration>
       </plugin>
