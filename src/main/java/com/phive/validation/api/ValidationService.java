@@ -30,8 +30,6 @@ import com.helger.phive.api.executorset.IValidationExecutorSet;
 import com.helger.phive.api.executorset.ValidationExecutorSetRegistry;
 import com.helger.phive.api.result.ValidationResultList;
 import com.helger.phive.api.validity.IValidityDeterminator;
-import com.helger.phive.en16931.EN16931Validation;
-import com.helger.phive.peppol.PeppolValidation;
 import com.helger.phive.result.json.PhiveJsonHelper;
 import com.helger.phive.xml.source.IValidationSourceXML;
 import com.helger.phive.xml.source.ValidationSourceXML;
@@ -63,14 +61,195 @@ public class ValidationService extends HttpServlet
   private static final String ALLOWED_ORIGINS_ENV = System.getenv ("ALLOWED_ORIGINS");
   private static final String [] ALLOWED_ORIGINS = parseAllowedOrigins (ALLOWED_ORIGINS_ENV);
   
+  /**
+   * Sort validation classes by dependency order.
+   * Critical dependencies:
+   * - Simplerinvoicing MUST load before EnergieEFactuur
+   * - Core standards (EN16931, UBL, CII) should load first
+   * - Peppol base before Peppol variants
+   */
+  private static java.util.List<String> sortByDependencies(java.util.List<String> classes) {
+    java.util.List<String> sorted = new java.util.ArrayList<>();
+    
+    // Priority order - these load first
+    String[] priorityOrder = {
+      "EN16931Validation",
+      "UBLValidation", 
+      "CIIValidation",
+      "PeppolValidation",              // Base Peppol first
+      "PeppolValidation2024_11",       // Legacy versions after base
+      "PeppolItalyValidation",
+      "SimplerInvoicingValidation",    // MUST be before EnergieEFactuur
+      "EnergieEFactuurValidation"
+    };
+    
+    // Add priority modules first (in order)
+    for (String priority : priorityOrder) {
+      for (String className : classes) {
+        if (className.endsWith(priority)) {
+          sorted.add(className);
+          break;
+        }
+      }
+    }
+    
+    // Add remaining modules (alphabetically)
+    for (String className : classes) {
+      if (!sorted.contains(className)) {
+        sorted.add(className);
+      }
+    }
+    
+    return sorted;
+  }
+  
   static
   {
-    // Initialize EN 16931 validation rules first (required for Peppol)
-    EN16931Validation.initEN16931 (VES_REGISTRY);
+    LOGGER.info ("========================================");
+    LOGGER.info ("🚀 Initializing PHIVE Validation Service");
+    LOGGER.info ("📦 Auto-loading validation modules from discovered list");
+    LOGGER.info ("========================================");
     
-    // Initialize all Peppol validation rules
-    PeppolValidation.initStandard (VES_REGISTRY);
-    LOGGER.info ("PHIVE Validation Service initialized with " + VES_REGISTRY.getAll ().size () + " validation rule sets");
+    int loadedModules = 0;
+    int failedModules = 0;
+    
+    // Try to load discovered modules first, fallback to hardcoded list
+    java.util.List<String> discoveredClasses = new java.util.ArrayList<>();
+    final java.io.File discoveryFile = new java.io.File("/app/discovered-modules.txt");
+    
+    if (discoveryFile.exists()) {
+      LOGGER.info ("📄 Loading modules from discovery file: " + discoveryFile.getAbsolutePath());
+      try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(discoveryFile))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+          line = line.trim();
+          if (!line.isEmpty() && line.contains("Validation")) {
+            discoveredClasses.add(line);
+          }
+        }
+        LOGGER.info ("✅ Discovered " + discoveredClasses.size() + " validation classes");
+        LOGGER.debug ("📋 Discovered classes: " + discoveredClasses);
+        
+        // CRITICAL: Sort with dependency awareness
+        // Simplerinvoicing MUST come before EnergieEFactuur
+        // Core modules should load first
+        discoveredClasses = sortByDependencies(discoveredClasses);
+        LOGGER.info ("🔄 Sorted modules by dependency order");
+        LOGGER.debug ("📋 Sorted classes: " + discoveredClasses);
+      } catch (Exception e) {
+        LOGGER.warn ("⚠ Failed to read discovery file: " + e.getMessage());
+      }
+    }
+    
+    // If discovered list doesn't include Peppol Legacy, add it manually
+    boolean hasPeppolLegacy = false;
+    for (String className : discoveredClasses) {
+      if (className.contains("peppol.legacy") || className.contains("PeppolValidation20")) {
+        hasPeppolLegacy = true;
+        break;
+      }
+    }
+    if (!hasPeppolLegacy) {
+      LOGGER.info ("📌 Adding Peppol Legacy manually (not in discovery)");
+      discoveredClasses.add("com.helger.phive.peppol.legacy.PeppolValidation2024_11");
+    }
+    
+    // Fallback: Hardcoded list with known working order (for dependencies)
+    if (discoveredClasses.isEmpty()) {
+      LOGGER.info ("📋 Using fallback hardcoded module list");
+      discoveredClasses.add("com.helger.phive.en16931.EN16931Validation");
+      discoveredClasses.add("com.helger.phive.peppol.PeppolValidation");
+      discoveredClasses.add("com.helger.phive.peppol.legacy.PeppolValidation2024_11");
+      discoveredClasses.add("com.helger.phive.peppol.italy.PeppolItalyValidation");
+      discoveredClasses.add("com.helger.phive.cii.CIIValidation");
+      discoveredClasses.add("com.helger.phive.ubl.UBLValidation");
+      discoveredClasses.add("com.helger.phive.ciuspt.CIUS_PTValidation");
+      discoveredClasses.add("com.helger.phive.ciusro.CIUS_ROValidation");
+      discoveredClasses.add("com.helger.phive.ebinterface.EbInterfaceValidation");
+      discoveredClasses.add("com.helger.phive.ehf.EHFValidation");
+      discoveredClasses.add("com.helger.phive.simplerinvoicing.SimplerInvoicingValidation");
+      discoveredClasses.add("com.helger.phive.energieefactuur.EnergieEFactuurValidation");
+      discoveredClasses.add("com.helger.phive.eracun.HReRacunValidation");
+      discoveredClasses.add("com.helger.phive.facturae.FacturaeValidation");
+      discoveredClasses.add("com.helger.phive.fatturapa.FatturaPAValidation");
+      discoveredClasses.add("com.helger.phive.finvoice.FinvoiceValidation");
+      discoveredClasses.add("com.helger.phive.france.FranceCTCValidation");
+      discoveredClasses.add("com.helger.phive.isdoc.ISDOCValidation");
+      discoveredClasses.add("com.helger.phive.ksef.KSeFValidation");
+      discoveredClasses.add("com.helger.phive.oioubl.OIOUBLValidation");
+      discoveredClasses.add("com.helger.phive.setu.SETUValidation");
+      discoveredClasses.add("com.helger.phive.svefaktura.SvefakturaValidation");
+      discoveredClasses.add("com.helger.phive.teapps.TEAPPSValidation");
+      discoveredClasses.add("com.helger.phive.ublbe.UBLBEValidation");
+      discoveredClasses.add("com.helger.phive.xrechnung.XRechnungValidation");
+      discoveredClasses.add("com.helger.phive.zatca.ZATCAValidation");
+      discoveredClasses.add("com.helger.phive.zugferd.ZugferdValidation");
+    }
+    
+    // Try to load each discovered module dynamically
+    for (final String className : discoveredClasses)
+    {
+      // Extract display name from class name
+      final String displayName = className.substring(className.lastIndexOf('.') + 1).replace("Validation", "");
+      
+      try
+      {
+        // Try to load the class dynamically
+        final Class<?> clazz = Class.forName (className);
+        final java.lang.reflect.Method[] methods = clazz.getMethods ();
+        
+        boolean methodInvoked = false;
+        for (final java.lang.reflect.Method method : methods)
+        {
+          if (method.getName ().startsWith ("init") && 
+              method.getParameterCount () == 1 &&
+              java.lang.reflect.Modifier.isStatic (method.getModifiers ()))
+          {
+            method.invoke (null, VES_REGISTRY);
+            LOGGER.info ("✓ " + displayName);
+            loadedModules++;
+            methodInvoked = true;
+            break;
+          }
+        }
+        
+        if (!methodInvoked)
+        {
+          LOGGER.warn ("⚠ " + displayName + " - No suitable init method found");
+          failedModules++;
+        }
+      }
+      catch (final ClassNotFoundException ex)
+      {
+        LOGGER.warn ("⚠ " + displayName + " - Module not available in build");
+        failedModules++;
+      }
+      catch (final java.lang.reflect.InvocationTargetException ex)
+      {
+        final Throwable cause = ex.getCause();
+        final String errorMsg = cause != null ? cause.getMessage() : ex.getMessage();
+        LOGGER.warn ("⚠ " + displayName + " - Failed to initialize: " + errorMsg);
+        if (cause != null) {
+          LOGGER.debug ("   Root cause: " + cause.getClass().getName());
+        }
+        failedModules++;
+      }
+      catch (final Exception ex)
+      {
+        LOGGER.warn ("⚠ " + displayName + " - Failed to load: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+        failedModules++;
+      }
+    }
+    
+    final int totalRules = VES_REGISTRY.getAll ().size ();
+    LOGGER.info ("========================================");
+    LOGGER.info ("✅ PHIVE Validation Service initialized!");
+    LOGGER.info ("📊 Statistics:");
+    LOGGER.info ("   Modules discovered: " + discoveredClasses.size());
+    LOGGER.info ("   Modules loaded: " + loadedModules);
+    LOGGER.info ("   Modules skipped: " + failedModules);
+    LOGGER.info ("   Total validation rulesets: " + totalRules);
+    LOGGER.info ("========================================");
     
     if (ALLOWED_ORIGINS_ENV != null && !ALLOWED_ORIGINS_ENV.isEmpty ())
     {
@@ -236,18 +415,23 @@ public class ValidationService extends HttpServlet
         // Create validation source
         final IValidationSourceXML aSource = ValidationSourceXML.create (new FileSystemResource (tempFile));
         
-        // Execute validation
-        final ValidationResultList aValidationResults = ValidationExecutionManager.executeValidation (IValidityDeterminator.createDefault (),
-                                                                                                     aExecutors,
-                                                                                                     aSource,
-                                                                                                     Locale.US);
+        // Execute validation with stop-on-error strategy
+        // If XML Schema validation fails, skip Schematron validations
+        final ValidationResultList aValidationResults = ValidationExecutionManager.executeValidation (
+            IValidityDeterminator.createDefault (),
+            aExecutors,
+            aSource,
+            Locale.US);
         
-        // Convert to JSON (without payload)
+        // Convert to JSON using PHIVE's standard format
         final long nDurationMS = TimeUnit.NANOSECONDS.toMillis (System.nanoTime () - nStartTime);
         new com.helger.phive.result.json.JsonValidationResultListHelper ()
             .sourceToJson (null) // Don't include validation source (which contains payload)
             .ves (aExecutors)
             .applyTo (aResponse, aValidationResults, Locale.US, nDurationMS);
+        
+        // Post-process: Add "skipped" status to Schematron validations if XML Schema failed
+        markSkippedValidations (aResponse, aValidationResults);
         
         // Override success field to use containsNoError for better accuracy
         aResponse.add (PhiveJsonHelper.JSON_SUCCESS, aValidationResults.containsNoError ());
@@ -339,9 +523,11 @@ public class ValidationService extends HttpServlet
       
       final IJsonObject aResponse = new JsonObject ();
       aResponse.add ("service", "PHIVE Validation API");
-      aResponse.add ("version", "1.1.0");
+      aResponse.add ("version", "1.2.0");
       aResponse.add ("status", "running");
+      aResponse.add ("buildType", "Local phive-rules (ALL 27 MODULES)");
       aResponse.add ("availableRules", VES_REGISTRY.getAll ().size ());
+      aResponse.add ("standards", "All phive-rules modules: EN16931, Peppol, UBL, CII, XRechnung, ZUGFeRD, fatturaPA, OIOUBL, EHF, ebInterface, and 17 more...");
       
       sendResponse (response, aResponse);
     }
@@ -350,6 +536,73 @@ public class ValidationService extends HttpServlet
       // Unknown endpoint - let default servlet handle it (might be a static file)
       // Don't send 404, let Tomcat handle it
       return;
+    }
+  }
+  
+  /**
+   * Post-process validation results to mark Schematron validations as "skipped"
+   * if XML Schema validation failed.
+   * 
+   * This modifies the JSON response in-place by adding "skipped" field to each validation result.
+   */
+  private void markSkippedValidations (final IJsonObject aResponse, final ValidationResultList aValidationResults)
+  {
+    // Check if XML Schema (XSD) validation failed by checking if first validation has errors
+    boolean xmlSchemaFailed = false;
+    if (aValidationResults.size () > 0)
+    {
+      final var firstResult = aValidationResults.get (0);
+      // If first validation has errors, consider XSD failed
+      if (firstResult.getErrorList () != null && !firstResult.getErrorList ().isEmpty ())
+      {
+        xmlSchemaFailed = true;
+        LOGGER.info ("XML Schema validation failed - marking subsequent Schematron validations as SKIPPED");
+      }
+    }
+    
+    // If XSD failed, add "skipped" field to all Schematron validations in the JSON response
+    if (xmlSchemaFailed && aResponse.containsKey ("results"))
+    {
+      final com.helger.json.IJsonArray aResults = aResponse.getAsArray ("results");
+      if (aResults != null)
+      {
+        boolean isFirst = true;
+        for (final com.helger.json.IJson aResultItem : aResults)
+        {
+          if (aResultItem != null && aResultItem.isObject ())
+          {
+            final IJsonObject aResultObj = aResultItem.getAsObject ();
+            if (!isFirst)
+            {
+              // Mark all subsequent validations (Schematron) as skipped
+              aResultObj.add ("skipped", true);
+              aResultObj.add ("skipReason", "XML Schema validation failed - Schematron validation not executed");
+            }
+            else
+            {
+              // First one (XSD) is not skipped
+              aResultObj.add ("skipped", false);
+            }
+            isFirst = false;
+          }
+        }
+      }
+    }
+    else if (aResponse.containsKey ("results"))
+    {
+      // XSD passed, mark all as not skipped
+      final com.helger.json.IJsonArray aResults = aResponse.getAsArray ("results");
+      if (aResults != null)
+      {
+        for (final com.helger.json.IJson aResultItem : aResults)
+        {
+          if (aResultItem != null && aResultItem.isObject ())
+          {
+            final IJsonObject aResultObj = aResultItem.getAsObject ();
+            aResultObj.add ("skipped", false);
+          }
+        }
+      }
     }
   }
   

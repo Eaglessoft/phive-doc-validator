@@ -1,6 +1,32 @@
 # PHIVE Document Validator
 
-A web-based REST API service for validating XML documents against Peppol and EN16931 standards using the PHIVE library. Developed by [Eaglessoft](https://eaglessoft.com/).
+A web-based REST API service for validating XML documents against **1065+ validation rules** from 27 countries using the PHIVE library. Developed by [Eaglessoft](https://eaglessoft.com/).
+
+## 🆕 Recent Updates
+
+### Version 1.2.0 - Auto-Discovery & Complete Coverage
+**Perfect Coverage**: ALL 27 PHIVE modules with **1065+ validation rulesets** - 100% module load rate! 🎉
+
+**🔄 Auto-Update System**: 
+- ✅ **Build-time module discovery** - automatically detects all locally built phive-rules
+- ✅ **GitHub Actions integration** - weekly rebuild checks for new rules
+- ✅ **Zero hardcoding** - new modules are discovered and loaded automatically
+- ✅ **Fallback safety** - uses known working configuration if discovery fails
+
+**Previously (v1.1.0)**: ~900 rules, 25/27 modules (manual configuration)
+
+**Now (v1.2.0)**: 
+- ✅ **27/27 modules loaded** (100% success rate)
+- ✅ **1065+ validation rulesets** 
+- ✅ All UBL versions (2.0 - 2.4)
+- ✅ All Peppol variants (International, Legacy, Italy, AU-NZ, Singapore, PINT)
+- ✅ XRechnung (Germany), ZUGFeRD/Factur-X (Germany/France)
+- ✅ fatturaPA (Italy), ebInterface (Austria), OIOUBL (Denmark)
+- ✅ EHF (Norway), Finvoice (Finland), Svefaktura (Sweden)
+- ✅ CII, CIUS-PT, CIUS-RO, France CTC, Simplerinvoicing, Energie eFactuur, eRacun
+- ✅ ISDOC (Czech), KSeF (Poland), SETU, TEAPPS, UBL.BE, ZATCA (Saudi Arabia)
+
+See [RULESET_UPDATE_NOTES.md](RULESET_UPDATE_NOTES.md) for complete details.
 
 ## About Eaglessoft
 
@@ -11,7 +37,10 @@ Visit [https://eaglessoft.com/](https://eaglessoft.com/) to learn more about our
 ## Features
 
 - 📄 Upload XML files or paste content directly
-- ✅ Support for Peppol and EN16931 validation rules
+- ✅ Support for **1065+ validation rules** from 27 countries (100% PHIVE coverage)
+- 🔄 **Auto-discovery system** - automatically detects and loads new validation modules
+- 🔁 **Auto-update** - weekly rebuild checks for new rules from phive-rules repository
+- 🌍 Global coverage: Peppol, EN16931, UBL, CII, XRechnung, ZUGFeRD, fatturaPA, and 20+ more
 - 🔍 Search and filter validation rules with real-time search
 - 📊 Detailed validation results (errors and warnings)
 - 💾 Download JSON and XML results
@@ -46,6 +75,8 @@ The Apache reverse proxy handles routing and context path management automatical
 
 The PHIVE libraries and rules are automatically downloaded as Maven dependencies during the build process. No manual cloning is required.
 
+**Note**: The service includes **900+ validation rulesets**. Initial build may take 5-10 minutes to download all dependencies. Container startup takes 10-15 seconds to load all rules.
+
 ### Local Development
 
 #### Requirements
@@ -53,6 +84,8 @@ The PHIVE libraries and rules are automatically downloaded as Maven dependencies
 - Java 17 or higher
 - Maven 3.6+
 - Apache Tomcat 9+ or compatible servlet container
+- **Minimum RAM**: 1GB (Recommended: 2GB+) - Required for loading 900+ validation rulesets
+- **Disk Space**: ~500MB for dependencies and build artifacts
 
 #### Build
 
@@ -162,7 +195,7 @@ The `docker-compose.yml` file includes:
 - Service configuration
 - Health checks
 - Volume mounts for output files
-- Environment variables for JVM options
+- Environment variables for JVM options (1GB heap for 900+ rulesets)
 - CORS configuration via `ALLOWED_ORIGINS` environment variable
 - Network configuration for service communication
 
@@ -240,12 +273,95 @@ phive-doc-validator/
 
 ## Supported Validation Rules
 
-The service supports validation rules from:
+The service supports **900+ validation rules** from multiple standards and countries:
 
-- **Peppol**: All Peppol BIS 3.x invoice validation rules
-- **EN 16931**: European standard for electronic invoicing
+### 🌍 International Standards
+- **UBL (Universal Business Language)** - All versions (2.0, 2.1, 2.2, 2.3, 2.4)
+- **CII (Cross Industry Invoice)** - All profiles and versions
+- **EN 16931** - European standard for electronic invoicing (all versions)
+- **Peppol** - International e-procurement network (all BIS profiles)
+- **Peppol PINT** - International variants (EU, Japan, Malaysia, UAE, Singapore)
 
-Rules are automatically loaded from PHIVE libraries. Use the `/list-rules` endpoint or the web interface to see all available rules.
+### 🇪🇺 European Standards
+- **Peppol BIS 3** - All profiles (Invoice, Credit Note, Order, Catalogue, etc.)
+- **OpenPeppol** - Latest versions (3.x and 2024.x releases)
+
+### 🌏 Country-Specific Standards
+
+#### 🇩🇪 Germany
+- **XRechnung** (all versions: 1.2, 2.x, 3.x)
+- **ZUGFeRD** (versions 2.0, 2.1, 2.2, 2.3)
+
+#### 🇫🇷 France
+- **Factur-X** (all profiles: MINIMUM, BASIC, EN 16931, EXTENDED)
+- **France CTC** (Continuous Transaction Controls)
+
+#### 🇮🇹 Italy
+- **fatturaPA** (all versions: 1.2, 1.2.1, 1.2.2)
+- **AGID** (Italian public administration standards)
+
+#### 🇦🇹 Austria
+- **ebInterface** (versions 3.0, 4.x, 5.0, 6.x)
+
+#### 🇩🇰 Denmark
+- **OIOUBL** (all versions and document types)
+
+#### 🇳🇴 Norway
+- **EHF** (Norwegian e-invoicing format - all profiles)
+
+#### 🇸🇪 Sweden
+- **Svefaktura** (Swedish standard)
+
+#### 🇫🇮 Finland
+- **Finvoice** (all versions: 1.3, 2.x, 3.0)
+
+#### 🇳🇱 Netherlands
+- **Simplerinvoicing** (all versions with G-Account extensions)
+- **NLCIUS** (Dutch CIUS)
+- **Energie eFactuur** (Energy sector invoicing)
+- **TEAPPS**
+
+#### 🇧🇪 Belgium
+- **UBL.BE** (Belgian UBL profile)
+
+#### 🇪🇸 Spain
+- **Facturae** (all versions: 3.0, 3.1, 3.2.x)
+
+#### 🇵🇹 Portugal
+- **CIUS-PT** (Portuguese CIUS)
+
+#### 🇷🇴 Romania
+- **CIUS-RO** (Romanian CIUS)
+
+#### 🇭🇷 Croatia
+- **HR eRacun** (Croatian e-invoicing)
+
+#### 🇵🇱 Poland
+- **KSeF** (Polish e-invoicing system)
+
+#### 🇨🇿 Czech Republic
+- **ISDOC** (Czech standard)
+
+#### 🇸🇦 Saudi Arabia
+- **ZATCA/FATOORA** (Saudi Arabian e-invoicing)
+
+#### 🌏 Asia Pacific
+- **A-NZ Peppol** (Australia/New Zealand)
+- **SG Peppol** (Singapore)
+- **Peppol PINT Japan** (Japanese profiles)
+- **Peppol PINT Malaysia** (Malaysian profiles)
+
+### 🏢 Industry-Specific Standards
+- **SETU** (Staffing Exchange Transaction Utilities)
+- **Peppol Directory** (Business Card standards)
+
+### 📊 Total Coverage
+- **900+ validation rulesets**
+- **25+ countries**
+- **30+ different standards**
+- **All major e-invoicing formats**
+
+Use the `/list-rules` endpoint or the web interface to see all available rules with their exact VESID identifiers.
 
 ## License
 

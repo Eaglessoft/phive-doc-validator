@@ -7,8 +7,9 @@ services:
     expose:
       - "8080"
     environment:
-      - JAVA_OPTS=-Xss1m -Xmx512m -XX:+UseG1GC
-      - CATALINA_OPTS=-Xss1m -Xmx512m -XX:+UseG1GC
+      # Memory for ALL available rules from local repository
+      - JAVA_OPTS=-Xss2m -Xmx1536m -XX:+UseG1GC -XX:MaxMetaspaceSize=768m
+      - CATALINA_OPTS=-Xss2m -Xmx1536m -XX:+UseG1GC -XX:MaxMetaspaceSize=768m
       # CORS: Comma-separated list of allowed origins (leave empty or unset to allow all origins)
       # For testing, add http://localhost or leave empty to allow all origins
       # Leave empty for local testing to allow all origins
