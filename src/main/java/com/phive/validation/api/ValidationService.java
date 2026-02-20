@@ -29,7 +29,7 @@ import com.helger.phive.xml.source.IValidationSourceXML;
  * PHIVE Validation REST API Service
  */
 @WebServlet(urlPatterns = { "/validate", "/list-rules", "/api" })
-@MultipartConfig(maxFileSize = 100 * 1024 * 1024) // 100MB max file size
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024)
 public class ValidationService extends HttpServlet
 {
   private static final Logger LOGGER = LoggerFactory.getLogger (ValidationService.class);
