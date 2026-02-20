@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+STOP_TIMEOUT_SECS="${STOP_TIMEOUT_SECS:-8}"
+
+# Collect tomcat/java PIDs related to this containerized Tomcat.
+collect_tomcat_pids() {
+  pgrep -f 'org.apache.catalina.startup.Bootstrap|catalina.base|catalina.home|/opt/tomcat' || true
+}
+
+# Also collect any listener PID on debug/http ports.
+collect_port_pids() {
+  ss -ltnp 2>/dev/null | awk '/:8000|:8080/ {print}' | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p' | sort -u || true
+}
+
+collect_bootstrap_pids() {
+  pgrep -f 'org.apache.catalina.startup.Bootstrap' || true
+}
+
+kill_collected_pids() {
+  SIGNAL="$1"
+  PIDS="$( (collect_tomcat_pids; collect_port_pids; collect_bootstrap_pids) | sort -u | tr '\n' ' ' )"
+  if [ -n "${PIDS// }" ]; then
+    kill -"${SIGNAL}" $PIDS 2>/dev/null || true
+  fi
+}
+
+wait_until_stopped() {
+  for _ in $(seq 1 "${STOP_TIMEOUT_SECS}"); do
+    if [ -z "$(collect_tomcat_pids)" ] && [ -z "$(collect_port_pids)" ]; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+# Graceful stop path (works without CATALINA_PID).
+"${CATALINA_HOME}/bin/shutdown.sh" >/dev/null 2>&1 || true
+if wait_until_stopped; then
+  exit 0
+fi
+
+# Fallback graceful stop with short timeout.
+catalina.sh stop 5 -force >/dev/null 2>&1 || true
+if wait_until_stopped; then
+  exit 0
+fi
+
+# Escalate: TERM, then KILL anything still left.
+kill_collected_pids TERM
+if wait_until_stopped; then
+  exit 0
+fi
+
+kill_collected_pids KILL
+
+for _ in $(seq 1 2); do
+  if [ -z "$(collect_tomcat_pids)" ] && [ -z "$(collect_port_pids)" ]; then
+    exit 0
+  fi
+  sleep 0.5
+done
+
+echo "tomcat-stop: still active process(es) detected on 8000/8080" >&2
+ss -ltnp 2>/dev/null | awk '/:8000|:8080/ {print}' >&2 || true
+exit 1

@@ -14,20 +14,18 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-    <failOnMissingWebXml>false</failOnMissingWebXml>
+    <maven.compiler.release>25</maven.compiler.release>
     
     <!-- PHIVE versions -->
     <phive.version>11.1.1</phive.version>
     <phive-rules.version>4.1.2</phive-rules.version>
     
     <!-- Servlet API -->
-    <servlet-api.version>4.0.1</servlet-api.version>
+    <servlet-api.version>6.0.0</servlet-api.version>
     
     <!-- Logging (keeping stable versions for compatibility) -->
     <slf4j.version>1.7.36</slf4j.version>
-    <logback.version>1.2.12</logback.version>
+    <logback.version>1.2.13</logback.version>
     
     <!-- JAXB -->
     <jaxb-runtime.version>4.0.6</jaxb-runtime.version>
@@ -35,6 +33,9 @@
     <!-- Maven plugins -->
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.compiler.plugin.version>3.15.0</maven.compiler.plugin.version>
+    <cargo.maven.plugin.version>1.10.14</cargo.maven.plugin.version>
+    <maven.install.skip>true</maven.install.skip>
+    <maven.deploy.skip>true</maven.deploy.skip>
   </properties>
 
   <dependencies>
@@ -225,8 +226,8 @@
     
     <!-- Servlet API -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
       <version>${servlet-api.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -250,10 +251,24 @@
       <artifactId>jaxb-runtime</artifactId>
       <version>${jaxb-runtime.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.4</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.14.2</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
-    <finalName>phive-validation-api</finalName>
+    <finalName>ROOT</finalName>
     
     <plugins>
       <plugin>
@@ -261,9 +276,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven.compiler.plugin.version}</version>
         <configuration>
-          <source>21</source>
-          <target>21</target>
-          <encoding>UTF-8</encoding>
+          <release>${maven.compiler.release}</release>
+          <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
       </plugin>
       
@@ -275,8 +289,59 @@
           <failOnMissingWebXml>false</failOnMissingWebXml>
           <warSourceDirectory>src/main/webapp</warSourceDirectory>
         </configuration>
+        <executions>
+          <execution>
+            <id>build-exploded-webapp</id>
+            <phase>package</phase>
+            <goals>
+              <goal>exploded</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.2</version>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.cargo</groupId>
+        <artifactId>cargo-maven3-plugin</artifactId>
+        <version>${cargo.maven.plugin.version}</version>
+        <configuration>
+          <container>
+            <containerId>tomcat10x</containerId>
+            <type>installed</type>
+            <zipUrlInstaller>
+              <url>https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.39/bin/apache-tomcat-10.1.39.zip</url>
+              <downloadDir>${project.basedir}/data/.cargo/downloads</downloadDir>
+              <extractDir>${project.basedir}/data/.cargo/installs</extractDir>
+            </zipUrlInstaller>
+          </container>
+          <configuration>
+            <type>standalone</type>
+            <home>${project.basedir}/data/.cargo/configurations/tomcat10x</home>
+            <properties>
+              <cargo.servlet.port>8080</cargo.servlet.port>
+              <cargo.jvmargs>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=127.0.0.1:8000</cargo.jvmargs>
+              <cargo.logging>medium</cargo.logging>
+            </properties>
+          </configuration>
+          <deployables>
+            <deployable>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>${project.artifactId}</artifactId>
+              <type>war</type>
+              <properties>
+                <context>ROOT</context>
+              </properties>
+            </deployable>
+          </deployables>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 </project>
-

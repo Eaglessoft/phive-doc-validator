@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Tomcat Debug (Cargo, localhost)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 8000,
+      "timeout": 300000,
+      "preLaunchTask": "dev_up",
+      "postDebugTask": "dev_down"
+    },
+    {
+      "type": "java",
+      "name": "Tomcat Debug (Cargo, 127.0.0.1)",
+      "request": "attach",
+      "hostName": "127.0.0.1",
+      "port": 8000,
+      "timeout": 300000,
+      "preLaunchTask": "dev_up",
+      "postDebugTask": "dev_down"
+    },
+    {
+      "type": "java",
+      "name": "Tomcat Attach Only (localhost)",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 8000,
+      "timeout": 300000
+    }
+  ]
+}

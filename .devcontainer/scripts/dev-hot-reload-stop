@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="${WORKSPACE_DIR:-/work}"
+PID_DIR="${PID_DIR:-${WORKSPACE_DIR}/data/.run}"
+WEBAPP_PID_FILE="${PID_DIR}/hot-reload-webapp.pid"
+JAVA_PID_FILE="${PID_DIR}/hot-reload-java.pid"
+
+kill_pid_file() {
+  local pid_file="$1"
+  if [ -f "${pid_file}" ]; then
+    local pid
+    pid="$(cat "${pid_file}")"
+    if [ -n "${pid}" ] && kill -0 "${pid}" 2>/dev/null; then
+      kill "${pid}" 2>/dev/null || true
+      sleep 1
+      kill -9 "${pid}" 2>/dev/null || true
+    fi
+    rm -f "${pid_file}"
+  fi
+}
+
+kill_pid_file "${WEBAPP_PID_FILE}"
+kill_pid_file "${JAVA_PID_FILE}"
+
+# Fallback cleanup if PID files are stale/missing.
+pkill -f "entr .*src/main/webapp" 2>/dev/null || true
+pkill -f "entr .*mvn -q -DskipTests compile war:exploded" 2>/dev/null || true

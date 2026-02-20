@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="${WORKSPACE_DIR:-/work}"
+DOC_BASE="${DOC_BASE:-${WORKSPACE_DIR}/target/ROOT}"
+LOG_FILE="${LOG_FILE:-${WORKSPACE_DIR}/data/.log/tomcat-debug.log}"
+WAIT_FOR_JDWP="${WAIT_FOR_JDWP:-1}"
+STOP_WAIT_SECS="${STOP_WAIT_SECS:-8}"
+
+collect_tomcat_pids() {
+  pgrep -f 'org.apache.catalina.startup.Bootstrap|catalina.base|catalina.home|/opt/tomcat' || true
+}
+
+collect_port_pids() {
+  ss -ltnp 2>/dev/null | awk '/:8000|:8080/ {print}' | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p' | sort -u || true
+}
+
+collect_8000_pids() {
+  ss -ltnp 2>/dev/null | awk '/:8000/ {print}' | sed -n 's/.*pid=\([0-9][0-9]*\).*/\1/p' | sort -u || true
+}
+
+mkdir -p "$(dirname "${LOG_FILE}")"
+: > "${LOG_FILE}"
+
+# Restart cleanly before each debug start.
+tomcat-stop || true
+for _ in $(seq 1 "${STOP_WAIT_SECS}"); do
+  if [ -z "$(collect_tomcat_pids)" ] && [ -z "$(collect_port_pids)" ]; then
+    break
+  fi
+  sleep 1
+done
+
+# Prevent attach timeout caused by stale listeners on 8000.
+STALE_8000="$(collect_8000_pids | tr '\n' ' ')"
+if [ -n "${STALE_8000// }" ]; then
+  kill -TERM ${STALE_8000} 2>/dev/null || true
+  sleep 2
+  STALE_8000="$(collect_8000_pids | tr '\n' ' ')"
+  if [ -n "${STALE_8000// }" ]; then
+    kill -KILL ${STALE_8000} 2>/dev/null || true
+  fi
+fi
+
+mkdir -p "${CATALINA_HOME}/conf/Catalina/localhost"
+cat > "${CATALINA_HOME}/conf/Catalina/localhost/ROOT.xml" <<XML
+<Context docBase="${DOC_BASE}" reloadable="true" />
+XML
+
+nohup catalina.sh jpda run >> "${LOG_FILE}" 2>&1 &
+
+if [ "${WAIT_FOR_JDWP}" != "1" ]; then
+  exit 0
+fi
+
+for i in $(seq 1 90); do
+  if grep -q 'Listening for transport dt_socket at address: 8000' "${LOG_FILE}"; then
+    if ss -ltnp 2>/dev/null | awk '/:8000/ {print}' | grep -q 'java'; then
+      echo "Tomcat debug aktif. Log: ${LOG_FILE}"
+      tail -n 40 "${LOG_FILE}" || true
+      exit 0
+    fi
+  fi
+
+  if [ "${i}" -ge 10 ] && [ -z "$(collect_tomcat_pids)" ]; then
+    echo 'Tomcat process ended before JDWP became ready'
+    tail -n 120 "${LOG_FILE}" || true
+    exit 1
+  fi
+
+  sleep 1
+done
+
+echo 'Tomcat JPDA port 8000 did not open in time'
+tail -n 120 "${LOG_FILE}" || true
+exit 1

@@ -1,0 +1,11 @@
+FROM mcr.microsoft.com/devcontainers/java:dev-25-jdk-bookworm
+
+# Base tooling
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends maven ca-certificates procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Cargo/Tomcat runtime ports
+EXPOSE 8080 8000
+
+CMD ["bash", "-lc", "sleep infinity"]

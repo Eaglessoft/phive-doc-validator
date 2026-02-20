@@ -1,16 +1,6 @@
-name: Build and Push Docker Image
+name: Build and Push Release Docker Image
 
 on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
-    paths:
-      - 'src/**'
-      - 'pom.xml'
-      - 'Containerfile'
-      - 'docker-compose.yml'
   release:
     types: [published]
 
@@ -43,12 +33,10 @@ jobs:
         with:
           images: |
             eaglessoftbv/phive-doc-validator
-          flavor: |
-            latest=false
           tags: |
-            type=raw,value=v1.0-${{ steps.commit.outputs.sha }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
-            type=ref,event=pr
+            type=raw,value=${{ github.event.release.tag_name }}
+            type=raw,value=sha-${{ steps.commit.outputs.sha }}
+            type=raw,value=latest
 
       - name: Build and push
         id: docker_build

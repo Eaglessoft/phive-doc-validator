@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+WORKSPACE_DIR="${WORKSPACE_DIR:-/work}"
+PID_DIR="${PID_DIR:-${WORKSPACE_DIR}/data/.run}"
+LOG_DIR="${LOG_DIR:-${WORKSPACE_DIR}/data/.log}"
+WEBAPP_LOG="${LOG_DIR}/hot-reload-webapp.log"
+JAVA_LOG="${LOG_DIR}/hot-reload-java.log"
+WEBAPP_PID_FILE="${PID_DIR}/hot-reload-webapp.pid"
+JAVA_PID_FILE="${PID_DIR}/hot-reload-java.pid"
+
+mkdir -p "${PID_DIR}" "${LOG_DIR}"
+
+# Ensure exploded webapp exists before rsync watcher starts.
+mkdir -p "${WORKSPACE_DIR}/target/ROOT"
+rsync -a \
+  --exclude 'WEB-INF/classes/***' \
+  --exclude 'WEB-INF/lib/***' \
+  "${WORKSPACE_DIR}/src/main/webapp/" "${WORKSPACE_DIR}/target/ROOT/" >/dev/null 2>&1 || true
+
+if [ -f "${WEBAPP_PID_FILE}" ] && kill -0 "$(cat "${WEBAPP_PID_FILE}")" 2>/dev/null; then
+  echo "Webapp watcher already running (PID $(cat "${WEBAPP_PID_FILE}"))"
+else
+  nohup bash -lc "find '${WORKSPACE_DIR}/src/main/webapp' -type f | entr -d rsync -a --exclude 'WEB-INF/classes/***' --exclude 'WEB-INF/lib/***' '${WORKSPACE_DIR}/src/main/webapp/' '${WORKSPACE_DIR}/target/ROOT/'" \
+    >> "${WEBAPP_LOG}" 2>&1 &
+  echo $! > "${WEBAPP_PID_FILE}"
+  echo "Started webapp watcher (PID $!)"
+fi
+
+if [ -f "${JAVA_PID_FILE}" ] && kill -0 "$(cat "${JAVA_PID_FILE}")" 2>/dev/null; then
+  echo "Java watcher already running (PID $(cat "${JAVA_PID_FILE}"))"
+else
+  nohup bash -lc "find '${WORKSPACE_DIR}/src/main/java' '${WORKSPACE_DIR}/src/main/resources' '${WORKSPACE_DIR}/pom.xml' -type f 2>/dev/null | entr -d bash -lc \"cd '${WORKSPACE_DIR}' && mvn -q -DskipTests clean compile war:exploded\"" \
+    >> "${JAVA_LOG}" 2>&1 &
+  echo $! > "${JAVA_PID_FILE}"
+  echo "Started Java watcher (PID $!)"
+fi

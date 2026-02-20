@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  phive-doc-validator:
+    image: eaglessoftbv/phive-doc-validator:latest
+    container_name: phive-doc-validator
+    ports:
+      - "8080:8080"
+    environment:
+      CONTEXT_PATH: "/"
+      LOG_FORMAT: "json"
+      LOG_LEVEL: "WARN"
+    restart: unless-stopped

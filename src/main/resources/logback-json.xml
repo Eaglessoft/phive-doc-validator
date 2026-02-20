@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>{"timestamp":"%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","level":"%level","thread":"%thread","logger":"%logger{36}","message":"%replace(%replace(%msg){'\\','\\\\'}){'"','\\"'}","exception":"%replace(%replace(%xThrowable){'\\','\\\\'}){'\n','\\n'}"}%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="${LOG_LEVEL:-WARN}">
+    <appender-ref ref="STDOUT" />
+  </root>
+</configuration>

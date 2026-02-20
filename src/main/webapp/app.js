@@ -1,795 +1,903 @@
-// Base tag is set in HTML, so we use relative paths for API calls
+(() => {
+    'use strict';
 
-// DOM elements
-const fileInput = document.getElementById('fileInput');
-const fileText = document.getElementById('fileText');
-const pasteContent = document.getElementById('pasteContent');
-const pasteMethod = document.getElementById('pasteMethod');
-const fileMethod = document.getElementById('fileMethod');
-const pasteContentGroup = document.getElementById('pasteContentGroup');
-const fileUploadGroup = document.getElementById('fileUploadGroup');
-const ruleSelectTrigger = document.getElementById('ruleSelectTrigger');
-const ruleSelectText = document.getElementById('ruleSelectText');
-const ruleSearch = document.getElementById('ruleSearch');
-const ruleSelect = document.getElementById('ruleSelect');
-const ruleDropdown = document.getElementById('ruleDropdown');
-const ruleList = document.getElementById('ruleList');
-const hideDeprecatedRules = document.getElementById('hideDeprecatedRules');
-const submitBtn = document.getElementById('submitBtn');
-const validationForm = document.getElementById('validationForm');
-const resultSection = document.getElementById('resultSection');
-const errorSection = document.getElementById('errorSection');
-const resultContent = document.getElementById('resultContent');
-const errorContent = document.getElementById('errorContent');
+    class ValidatorApp {
+        constructor() {
+            this.dom = this.cacheDom();
+            this.state = {
+                allRules: [],
+                filteredRules: [],
+                isDropdownOpen: false,
+                pasteContentValue: '',
+                uploadedFileName: '',
+                uploadedFile: null,
+                currentXmlContent: '',
+                lastRenderedLineCount: 0
+            };
+            this.ruleSearchDebounceTimer = null;
+        }
 
-// Store all rules
-let allRules = [];
-let filteredRules = [];
-let isDropdownOpen = false;
+        init() {
+            this.setupEventListeners();
+            this.updateLineNumbers();
+            this.loadRules();
+        }
 
-// Store content for each input method
-let pasteContentValue = '';
-let uploadedFileName = '';
-let uploadedFile = null;
-let currentXmlContent = ''; // Store current XML content for download
+        cacheDom() {
+            return {
+                fileInput: document.getElementById('fileInput'),
+                fileText: document.getElementById('fileText'),
+                pasteContent: document.getElementById('pasteContent'),
+                pasteMethod: document.getElementById('pasteMethod'),
+                fileMethod: document.getElementById('fileMethod'),
+                pasteContentGroup: document.getElementById('pasteContentGroup'),
+                fileUploadGroup: document.getElementById('fileUploadGroup'),
+                ruleSelectTrigger: document.getElementById('ruleSelectTrigger'),
+                ruleSelectText: document.getElementById('ruleSelectText'),
+                ruleSearch: document.getElementById('ruleSearch'),
+                ruleSelect: document.getElementById('ruleSelect'),
+                ruleDropdown: document.getElementById('ruleDropdown'),
+                ruleList: document.getElementById('ruleList'),
+                hideDeprecatedRules: document.getElementById('hideDeprecatedRules'),
+                submitBtn: document.getElementById('submitBtn'),
+                validationForm: document.getElementById('validationForm'),
+                resultSection: document.getElementById('resultSection'),
+                errorSection: document.getElementById('errorSection'),
+                resultContent: document.getElementById('resultContent'),
+                errorContent: document.getElementById('errorContent'),
+                lineNumbers: document.getElementById('lineNumbers'),
+                textareaWrapper: document.querySelector('.textarea-wrapper'),
+                footer: document.querySelector('footer')
+            };
+        }
 
+        setupEventListeners() {
+            const {
+                fileInput,
+                pasteContent,
+                textareaWrapper,
+                pasteMethod,
+                fileMethod,
+                validationForm,
+                ruleSelectTrigger,
+                ruleSearch,
+                hideDeprecatedRules,
+                ruleDropdown
+            } = this.dom;
 
-// Initialize app
-document.addEventListener('DOMContentLoaded', () => {
-    loadRules();
-    setupEventListeners();
-});
-
-// Setup event listeners
-function setupEventListeners() {
-    fileInput.addEventListener('change', handleFileSelect);
-    pasteContent.addEventListener('input', () => {
-        handlePasteContentChange();
-        updateLineNumbers();
-    });
-    // Sync scroll between textarea and line numbers
-    const textareaWrapper = document.querySelector('.textarea-wrapper');
-    if (textareaWrapper) {
-        textareaWrapper.addEventListener('scroll', () => {
-            const lineNumbers = document.getElementById('lineNumbers');
-            if (lineNumbers) {
-                lineNumbers.scrollTop = textareaWrapper.scrollTop;
+            if (fileInput) {
+                fileInput.addEventListener('change', (event) => this.handleFileSelect(event));
             }
-        });
-    }
-    pasteMethod.addEventListener('change', handleInputMethodChange);
-    fileMethod.addEventListener('change', handleInputMethodChange);
-    validationForm.addEventListener('submit', handleFormSubmit);
-    
-    // Custom dropdown trigger
-    ruleSelectTrigger.addEventListener('click', toggleDropdown);
-    
-    // Rule search events (inside dropdown)
-    ruleSearch.addEventListener('input', handleRuleSearch);
-    ruleSearch.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent dropdown from closing
-    });
-    
-    // Hide deprecated rules checkbox
-    hideDeprecatedRules.addEventListener('change', handleDeprecatedFilterChange);
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!ruleSelectTrigger.contains(e.target) && !ruleDropdown.contains(e.target)) {
-            closeDropdown();
-        }
-    });
-    
-    // Prevent dropdown from closing when clicking inside
-    ruleDropdown.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-    
-    // Initialize line numbers
-    updateLineNumbers();
-}
 
-// Handle file selection
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
-        uploadedFileName = file.name;
-        uploadedFile = file;
-        fileText.textContent = file.name;
-        fileText.style.color = '#6794f1';
-        
-        // Read file content and put it in paste content area (but don't switch method)
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            pasteContentValue = e.target.result;
-            currentXmlContent = e.target.result; // Store for download
-            pasteContent.value = pasteContentValue;
-            // Only update line numbers if paste method is currently visible
-            if (pasteMethod.checked) {
-                updateLineNumbers();
+            if (pasteContent) {
+                pasteContent.addEventListener('input', () => this.handlePasteContentChange());
             }
-            checkFormValidity();
-        };
-        reader.onerror = function() {
-            showError('Failed to read file content');
-        };
-        reader.readAsText(file);
-    } else {
-        uploadedFileName = '';
-        uploadedFile = null;
-        fileText.textContent = 'Select XML file';
-        fileText.style.color = '#64748b';
-        checkFormValidity();
-    }
-}
 
-// Handle paste content change
-function handlePasteContentChange(event) {
-    pasteContentValue = pasteContent.value;
-    updateLineNumbers();
-    checkFormValidity();
-}
-
-// Ensure file input is enabled when file upload group is shown
-function ensureFileInputEnabled() {
-    if (fileInput) {
-        fileInput.disabled = false;
-        fileInput.removeAttribute('disabled');
-    }
-}
-
-// Handle input method change
-function handleInputMethodChange(event) {
-    const pasteTab = document.querySelector('label[for="pasteMethod"]');
-    const fileTab = document.querySelector('label[for="fileMethod"]');
-    
-    if (pasteMethod.checked) {
-        pasteContentGroup.style.display = 'block';
-        fileUploadGroup.style.display = 'none';
-        // Restore paste content value (don't clear it)
-        pasteContent.value = pasteContentValue;
-        updateLineNumbers();
-        if (pasteTab) pasteTab.classList.add('active');
-        if (fileTab) fileTab.classList.remove('active');
-    } else if (fileMethod.checked) {
-        pasteContentGroup.style.display = 'none';
-        fileUploadGroup.style.display = 'block';
-        // Restore file selection state (don't clear it)
-        if (uploadedFileName) {
-            fileText.textContent = uploadedFileName;
-            fileText.style.color = '#6794f1';
-        } else {
-            fileText.textContent = 'Select XML file';
-            fileText.style.color = '#64748b';
-        }
-        ensureFileInputEnabled(); // Ensure file input is enabled
-        if (fileTab) fileTab.classList.add('active');
-        if (pasteTab) pasteTab.classList.remove('active');
-    }
-    checkFormValidity();
-}
-
-// Update line numbers for textarea
-function updateLineNumbers() {
-    const textarea = pasteContent;
-    const lineNumbers = document.getElementById('lineNumbers');
-    const lines = textarea.value.split('\n').length;
-    const scrollTop = textarea.scrollTop;
-    
-    let lineNumbersHtml = '';
-    for (let i = 1; i <= Math.max(lines, 15); i++) {
-        lineNumbersHtml += `<div class="line-number">${i}</div>`;
-    }
-    lineNumbers.innerHTML = lineNumbersHtml;
-    lineNumbers.scrollTop = scrollTop;
-}
-
-// Check if form is valid
-function checkFormValidity() {
-    const isPasteMethod = pasteMethod.checked;
-    const hasFile = fileInput.files.length > 0;
-    const hasPasteContent = pasteContent.value.trim().length > 0;
-    const hasRule = ruleSelect.value !== '';
-    
-    const hasInput = isPasteMethod ? hasPasteContent : hasFile;
-    submitBtn.disabled = !(hasInput && hasRule);
-}
-
-// Toggle dropdown
-function toggleDropdown() {
-    if (isDropdownOpen) {
-        closeDropdown();
-    } else {
-        openDropdown();
-    }
-}
-
-// Open dropdown
-function openDropdown() {
-    isDropdownOpen = true;
-    ruleSelectTrigger.classList.add('active');
-    ruleDropdown.style.display = 'flex';
-    ruleSearch.focus();
-    // Hide footer when dropdown is open
-    const footer = document.querySelector('footer');
-    if (footer) {
-        footer.style.display = 'none';
-    }
-    // Populate with current filtered rules
-    if (allRules.length > 0) {
-        const searchTerm = ruleSearch.value.toLowerCase().trim();
-        applyFilters(searchTerm);
-    }
-}
-
-// Close dropdown
-function closeDropdown() {
-    isDropdownOpen = false;
-    ruleSelectTrigger.classList.remove('active');
-    ruleDropdown.style.display = 'none';
-    ruleSearch.value = '';
-    // Show footer when dropdown is closed
-    const footer = document.querySelector('footer');
-    if (footer) {
-        footer.style.display = 'block';
-    }
-}
-
-// Load available rules from API
-async function loadRules() {
-    try {
-        const response = await fetch('list-rules');
-        if (!response.ok) {
-            throw new Error('Failed to load rules');
-        }
-        
-        const data = await response.json();
-        
-        // Store all rules
-        if (data.rules && data.rules.length > 0) {
-            allRules = data.rules;
-            // Apply initial filters (deprecated filter is checked by default)
-            applyFilters('');
-            ruleSearch.placeholder = `${allRules.length} rules available - Search...`;
-        } else {
-            ruleList.innerHTML = '<div class="rule-empty">No rules found</div>';
-            showError('No rules found');
-        }
-    } catch (error) {
-        console.error('Error loading rules:', error);
-        ruleList.innerHTML = '<div class="rule-empty">Failed to load rules</div>';
-        showError('An error occurred while loading rules: ' + error.message);
-    }
-}
-
-// Handle rule search input
-function handleRuleSearch(event) {
-    const searchTerm = event.target.value.toLowerCase().trim();
-    applyFilters(searchTerm);
-}
-
-// Handle deprecated filter change
-function handleDeprecatedFilterChange() {
-    const searchTerm = ruleSearch.value.toLowerCase().trim();
-    applyFilters(searchTerm);
-}
-
-// Apply both search and deprecated filters
-function applyFilters(searchTerm) {
-    let rules = [...allRules];
-    
-    // Apply search filter
-    if (searchTerm !== '') {
-        rules = rules.filter(rule => {
-            const readableName = (rule.readableName || rule.name || rule.vesid || '').toLowerCase();
-            const vesid = (rule.vesid || '').toLowerCase();
-            return readableName.includes(searchTerm) || vesid.includes(searchTerm);
-        });
-    }
-    
-    // Apply deprecated filter
-    if (hideDeprecatedRules.checked) {
-        rules = rules.filter(rule => !rule.deprecated);
-    }
-    
-    filteredRules = rules;
-    renderRuleList(filteredRules);
-}
-
-// Render rule list in dropdown
-function renderRuleList(rules) {
-    ruleList.innerHTML = '';
-    
-    if (rules.length === 0) {
-        ruleList.innerHTML = '<div class="rule-empty">No results found</div>';
-        return;
-    }
-    
-    // Add rules to list
-    rules.forEach(rule => {
-        const item = document.createElement('div');
-        item.className = `rule-item ${rule.deprecated ? 'deprecated' : ''} ${ruleSelect.value === rule.vesid ? 'selected' : ''}`;
-        
-        const readableName = rule.readableName || rule.name || rule.vesid;
-        const vesid = rule.vesid;
-        
-        item.innerHTML = `
-            <div class="rule-item-name">${escapeHtml(readableName)}</div>
-            <div class="rule-item-vesid">${escapeHtml(vesid)}</div>
-        `;
-        
-        item.addEventListener('click', () => {
-            selectRule(rule);
-        });
-        
-        ruleList.appendChild(item);
-    });
-}
-
-// Select a rule
-function selectRule(rule) {
-    const readableName = rule.readableName || rule.name || rule.vesid;
-    ruleSelect.value = rule.vesid;
-    ruleSelectText.textContent = readableName;
-    closeDropdown();
-    checkFormValidity();
-}
-
-// Handle form submission
-async function handleFormSubmit(event) {
-    event.preventDefault();
-    
-    const rule = ruleSelect.value;
-    const isPasteMethod = pasteMethod.checked;
-    
-    if (!rule) {
-        showError('Please select a validation rule');
-        ruleSelect.focus();
-        return;
-    }
-    
-    // Show loading state
-    setLoadingState(true);
-    hideResults();
-    
-    try {
-        const formData = new FormData();
-        formData.append('rule', rule);
-        
-        if (isPasteMethod) {
-            // Paste content method
-            const pasteText = pasteContent.value.trim();
-            if (!pasteText) {
-                showError('Please paste XML content');
-                setLoadingState(false);
-                return;
+            if (textareaWrapper) {
+                textareaWrapper.addEventListener('scroll', () => {
+                    if (this.dom.lineNumbers) {
+                        this.dom.lineNumbers.scrollTop = textareaWrapper.scrollTop;
+                    }
+                });
             }
-            
-            // Store XML content for download
-            currentXmlContent = pasteText;
-            
-            // Create a Blob from the paste content
-            const blob = new Blob([pasteText], { type: 'application/xml' });
-            const fileName = 'pasted-content.xml';
-            formData.append('file', blob, fileName);
-            formData.append('isPasteContent', 'true');
-        } else {
-            // File upload method - use paste content if it has been edited, otherwise use original file
-            const pasteText = pasteContent.value.trim();
-            if (pasteText && uploadedFile) {
-                // User has edited the content in paste area, use that instead
-                currentXmlContent = pasteText;
-                const blob = new Blob([pasteText], { type: 'application/xml' });
-                const fileName = uploadedFileName || 'uploaded-file.xml';
-                formData.append('file', blob, fileName);
-            } else {
-                // Use original uploaded file
-                const file = fileInput.files[0];
-                if (!file) {
-                    showError('Please select an XML file');
-                    setLoadingState(false);
+
+            if (pasteMethod) {
+                pasteMethod.addEventListener('change', () => this.handleInputMethodChange());
+            }
+
+            if (fileMethod) {
+                fileMethod.addEventListener('change', () => this.handleInputMethodChange());
+            }
+
+            if (validationForm) {
+                validationForm.addEventListener('submit', (event) => this.handleFormSubmit(event));
+            }
+
+            if (ruleSelectTrigger) {
+                ruleSelectTrigger.addEventListener('click', () => this.toggleDropdown());
+            }
+
+            if (ruleSearch) {
+                ruleSearch.addEventListener('input', (event) => this.handleRuleSearch(event));
+                ruleSearch.addEventListener('click', (event) => event.stopPropagation());
+            }
+
+            if (hideDeprecatedRules) {
+                hideDeprecatedRules.addEventListener('change', () => this.handleDeprecatedFilterChange());
+            }
+
+            document.addEventListener('click', (event) => {
+                const trigger = this.dom.ruleSelectTrigger;
+                const dropdown = this.dom.ruleDropdown;
+                if (!trigger || !dropdown) {
                     return;
                 }
-                // Use stored XML content if available, otherwise read from file
-                if (currentXmlContent) {
-                    formData.append('file', file);
-                } else {
-                    // Read file content for download (should already be stored, but just in case)
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        currentXmlContent = e.target.result;
-                    };
-                    reader.readAsText(file);
-                    formData.append('file', file);
+                if (!trigger.contains(event.target) && !dropdown.contains(event.target)) {
+                    this.closeDropdown();
                 }
+            });
+
+            if (ruleDropdown) {
+                ruleDropdown.addEventListener('click', (event) => event.stopPropagation());
+            }
+
+            if (this.dom.ruleList) {
+                this.dom.ruleList.addEventListener('click', (event) => this.handleRuleListClick(event));
             }
         }
-        
-        const response = await fetch('validate', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        // Check for HTTP errors
-        if (!response.ok) {
-            // Check if PHIVE returned a global error
-            const errorMessage = result.error || result.message || result.errorText || 'Validation error';
-            throw new Error(errorMessage);
-        }
-        
-        // Check for PHIVE global errors in response
-        if (result.error || result.errorText) {
-            const errorMessage = result.error || result.errorText || 'Validation error';
-            showError(errorMessage);
-            return;
-        }
-        
-        // Display results (even if validation failed, we still show the results)
-        displayResults(result);
-    } catch (error) {
-        console.error('Validation error:', error);
-        showError('An error occurred during validation: ' + error.message);
-    } finally {
-        setLoadingState(false);
-    }
-}
 
-// Set loading state
-function setLoadingState(loading) {
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnLoader = submitBtn.querySelector('.btn-loader');
-    
-    if (loading) {
-        submitBtn.disabled = true;
-        btnText.textContent = 'Validating...';
-        btnLoader.style.display = 'inline-block';
-    } else {
-        submitBtn.disabled = false;
-        btnText.textContent = 'Validate';
-        btnLoader.style.display = 'none';
-        checkFormValidity();
-    }
-}
+        handleFileSelect(event) {
+            const file = event.target.files[0];
 
-// Display validation results
-function displayResults(result) {
-    errorSection.style.display = 'none';
-    resultSection.style.display = 'block';
-    
-    const isSuccess = result.success === true;
-    const fileName = result.fileName || 'Unknown file';
-    
-    // Count total errors and warnings
-    let totalErrors = 0;
-    let totalWarnings = 0;
-    const validationResults = [];
-    
-    if (result.results && Array.isArray(result.results)) {
-        result.results.forEach(resultItem => {
-            const items = resultItem.items || [];
-            let errors = 0;
-            let warnings = 0;
-            
-            items.forEach(item => {
-                const level = (item.errorLevel || item.severity || '').toUpperCase();
-                if (level.includes('ERROR') || level === 'ERROR') {
-                    errors++;
-                    totalErrors++;
-                } else if (level.includes('WARNING') || level === 'WARNING' || level.includes('WARN')) {
-                    warnings++;
-                    totalWarnings++;
+            if (file) {
+                this.state.uploadedFileName = file.name;
+                this.state.uploadedFile = file;
+
+                if (this.dom.fileText) {
+                    this.dom.fileText.textContent = file.name;
+                    this.dom.fileText.style.color = '#6794f1';
                 }
-            });
-            
-            validationResults.push({
-                artifactType: resultItem.artifactType || 'Unknown',
-                artifactPath: resultItem.artifactPath || '',
-                success: resultItem.success,
-                items: items,
-                errors: errors,
-                warnings: warnings
-            });
-        });
-    }
-    
-    // Build HTML
-    let html = '';
-    
-    // Summary message
-    const summaryMessage = isSuccess 
-        ? `The file <strong>${escapeHtml(fileName)}</strong> is valid. It contains <strong>${totalErrors}</strong> errors and <strong>${totalWarnings}</strong> warnings.`
-        : `The file <strong>${escapeHtml(fileName)}</strong> is invalid. It contains <strong>${totalErrors}</strong> errors and <strong>${totalWarnings}</strong> warnings.`;
-    
-    html += `<div class="validation-summary-message ${isSuccess ? 'success' : 'error'}">${summaryMessage}</div>`;
-    
-    // Summary table
-    if (validationResults.length > 0) {
-        html += '<div class="validation-summary-section">';
-        html += '<h3 class="section-title">Summary</h3>';
-        html += '<table class="validation-summary-table">';
-        html += '<thead><tr><th>Validation type</th><th>Validation artifact</th><th>Warnings</th><th>Errors</th></tr></thead>';
-        html += '<tbody>';
-        
-        validationResults.forEach(vr => {
-            const artifactType = formatArtifactType(vr.artifactType);
-            const artifactPath = escapeHtml(vr.artifactPath);
-            html += `<tr>
-                <td>${artifactType}</td>
-                <td>${artifactPath}</td>
-                <td class="count-cell ${vr.warnings > 0 ? 'has-warnings' : ''}">${vr.warnings}</td>
-                <td class="count-cell ${vr.errors > 0 ? 'has-errors' : ''}">${vr.errors}</td>
-            </tr>`;
-        });
-        
-        html += '</tbody></table>';
-        html += '</div>';
-    }
-    
-    // Details section
-    if (validationResults.length > 0) {
-        html += '<div class="validation-details-section">';
-        html += '<h3 class="section-title">Details</h3>';
-        
-        validationResults.forEach((vr, index) => {
-            const artifactType = formatArtifactType(vr.artifactType);
-            const artifactPath = escapeHtml(vr.artifactPath);
-            
-            html += `<div class="validation-detail-group">`;
-            html += `<h4 class="detail-group-title">${artifactType} - ${artifactPath}</h4>`;
-            
-            if (vr.items && vr.items.length > 0) {
-                vr.items.forEach(item => {
-                    const itemClass = getItemClass(item);
-                    const itemIcon = getItemIcon(item);
-                    const errorText = item.errorText || item.message || item.text || '';
-                    const errorLocation = item.errorLocation || item.errorLocationStr || '';
-                    const errorField = item.errorFieldName || item.field || '';
-                    const errorLevel = item.errorLevel || item.severity || '';
-                    
-                    html += `
-                        <div class="validation-item ${itemClass}">
-                            <div class="validation-item-title">
-                                ${itemIcon} ${errorLevel ? escapeHtml(errorLevel) : 'Validation Item'}${errorField ? ' - ' + escapeHtml(errorField) : ''}
-                            </div>
-                            <div class="validation-item-message">
-                                ${escapeHtml(errorText)}
-                                ${errorLocation ? `<br><small style="color: var(--text-secondary);">Location: ${escapeHtml(errorLocation)}</small>` : ''}
-                            </div>
-                        </div>
-                    `;
+
+                const reader = new FileReader();
+                reader.onload = (loadEvent) => {
+                    const content = loadEvent.target.result;
+                    this.state.pasteContentValue = content;
+                    this.state.currentXmlContent = content;
+                    if (this.dom.pasteContent) {
+                        this.dom.pasteContent.value = content;
+                    }
+                    if (this.dom.pasteMethod && this.dom.pasteMethod.checked) {
+                        this.updateLineNumbers();
+                    }
+                    this.checkFormValidity();
+                };
+                reader.onerror = () => {
+                    this.showError('Failed to read file content');
+                };
+                reader.readAsText(file);
+                return;
+            }
+
+            this.state.uploadedFileName = '';
+            this.state.uploadedFile = null;
+            if (this.dom.fileText) {
+                this.dom.fileText.textContent = 'Select XML file';
+                this.dom.fileText.style.color = '#64748b';
+            }
+            this.checkFormValidity();
+        }
+
+        handlePasteContentChange() {
+            const content = this.dom.pasteContent ? this.dom.pasteContent.value : '';
+            this.state.pasteContentValue = content;
+            this.updateLineNumbers();
+            this.checkFormValidity();
+        }
+
+        ensureFileInputEnabled() {
+            if (this.dom.fileInput) {
+                this.dom.fileInput.disabled = false;
+                this.dom.fileInput.removeAttribute('disabled');
+            }
+        }
+
+        handleInputMethodChange() {
+            const pasteTab = document.querySelector('label[for="pasteMethod"]');
+            const fileTab = document.querySelector('label[for="fileMethod"]');
+
+            if (this.dom.pasteMethod && this.dom.pasteMethod.checked) {
+                if (this.dom.pasteContentGroup) {
+                    this.dom.pasteContentGroup.style.display = 'block';
+                }
+                if (this.dom.fileUploadGroup) {
+                    this.dom.fileUploadGroup.style.display = 'none';
+                }
+                if (this.dom.pasteContent) {
+                    this.dom.pasteContent.value = this.state.pasteContentValue;
+                }
+                this.updateLineNumbers();
+                if (pasteTab) {
+                    pasteTab.classList.add('active');
+                }
+                if (fileTab) {
+                    fileTab.classList.remove('active');
+                }
+            } else if (this.dom.fileMethod && this.dom.fileMethod.checked) {
+                if (this.dom.pasteContentGroup) {
+                    this.dom.pasteContentGroup.style.display = 'none';
+                }
+                if (this.dom.fileUploadGroup) {
+                    this.dom.fileUploadGroup.style.display = 'block';
+                }
+
+                if (this.dom.fileText) {
+                    if (this.state.uploadedFileName) {
+                        this.dom.fileText.textContent = this.state.uploadedFileName;
+                        this.dom.fileText.style.color = '#6794f1';
+                    } else {
+                        this.dom.fileText.textContent = 'Select XML file';
+                        this.dom.fileText.style.color = '#64748b';
+                    }
+                }
+
+                this.ensureFileInputEnabled();
+                if (fileTab) {
+                    fileTab.classList.add('active');
+                }
+                if (pasteTab) {
+                    pasteTab.classList.remove('active');
+                }
+            }
+
+            this.checkFormValidity();
+        }
+
+        updateLineNumbers() {
+            const textarea = this.dom.pasteContent;
+            const lineNumbers = this.dom.lineNumbers;
+
+            if (!textarea || !lineNumbers) {
+                return;
+            }
+
+            const lines = textarea.value.split('\n').length;
+            const scrollTop = textarea.scrollTop;
+            const targetLineCount = Math.max(lines, 15);
+
+            if (this.state.lastRenderedLineCount !== targetLineCount) {
+                let lineNumbersHtml = '';
+                for (let i = 1; i <= targetLineCount; i++) {
+                    lineNumbersHtml += `<div class="line-number">${i}</div>`;
+                }
+                lineNumbers.innerHTML = lineNumbersHtml;
+                this.state.lastRenderedLineCount = targetLineCount;
+            }
+            lineNumbers.scrollTop = scrollTop;
+        }
+
+        checkFormValidity() {
+            const isPasteMethod = this.dom.pasteMethod ? this.dom.pasteMethod.checked : false;
+            const hasFile = this.dom.fileInput ? this.dom.fileInput.files.length > 0 : false;
+            const hasPasteContent = this.dom.pasteContent ? this.dom.pasteContent.value.trim().length > 0 : false;
+            const hasRule = this.dom.ruleSelect ? this.dom.ruleSelect.value !== '' : false;
+            const hasInput = isPasteMethod ? hasPasteContent : hasFile;
+
+            if (this.dom.submitBtn) {
+                this.dom.submitBtn.disabled = !(hasInput && hasRule);
+            }
+        }
+
+        toggleDropdown() {
+            if (this.state.isDropdownOpen) {
+                this.closeDropdown();
+                return;
+            }
+            this.openDropdown();
+        }
+
+        openDropdown() {
+            this.state.isDropdownOpen = true;
+
+            if (this.dom.ruleSelectTrigger) {
+                this.dom.ruleSelectTrigger.classList.add('active');
+            }
+            if (this.dom.ruleDropdown) {
+                this.dom.ruleDropdown.style.display = 'flex';
+            }
+            if (this.dom.ruleSearch) {
+                this.dom.ruleSearch.focus();
+            }
+            if (this.dom.footer) {
+                this.dom.footer.style.display = 'none';
+            }
+
+            if (this.state.allRules.length > 0 && this.dom.ruleSearch) {
+                const searchTerm = this.dom.ruleSearch.value.toLowerCase().trim();
+                this.applyFilters(searchTerm);
+            }
+        }
+
+        closeDropdown() {
+            this.state.isDropdownOpen = false;
+
+            if (this.dom.ruleSelectTrigger) {
+                this.dom.ruleSelectTrigger.classList.remove('active');
+            }
+            if (this.dom.ruleDropdown) {
+                this.dom.ruleDropdown.style.display = 'none';
+            }
+            if (this.dom.ruleSearch) {
+                this.dom.ruleSearch.value = '';
+            }
+            if (this.dom.footer) {
+                this.dom.footer.style.display = 'block';
+            }
+        }
+
+        async loadRules() {
+            try {
+                const response = await fetch('list-rules');
+                if (!response.ok) {
+                    throw new Error('Failed to load rules');
+                }
+
+                const data = await response.json();
+
+                if (data.rules && data.rules.length > 0) {
+                    this.state.allRules = data.rules;
+                    this.applyFilters('');
+                    if (this.dom.ruleSearch) {
+                        this.dom.ruleSearch.placeholder = `${this.state.allRules.length} rules available - Search...`;
+                    }
+                    return;
+                }
+
+                if (this.dom.ruleList) {
+                    this.dom.ruleList.innerHTML = '<div class="rule-empty">No rules found</div>';
+                }
+                this.showError('No rules found');
+            } catch (error) {
+                console.error('Error loading rules:', error);
+                if (this.dom.ruleList) {
+                    this.dom.ruleList.innerHTML = '<div class="rule-empty">Failed to load rules</div>';
+                }
+                this.showError('An error occurred while loading rules: ' + error.message);
+            }
+        }
+
+        handleRuleSearch(event) {
+            const searchTerm = event.target.value.toLowerCase().trim();
+            clearTimeout(this.ruleSearchDebounceTimer);
+            this.ruleSearchDebounceTimer = setTimeout(() => {
+                this.applyFilters(searchTerm);
+            }, 180);
+        }
+
+        handleDeprecatedFilterChange() {
+            clearTimeout(this.ruleSearchDebounceTimer);
+            const searchTerm = this.dom.ruleSearch ? this.dom.ruleSearch.value.toLowerCase().trim() : '';
+            this.applyFilters(searchTerm);
+        }
+
+        applyFilters(searchTerm) {
+            let rules = [...this.state.allRules];
+
+            if (searchTerm !== '') {
+                rules = rules.filter((rule) => {
+                    const readableName = (rule.readableName || rule.name || rule.vesid || '').toLowerCase();
+                    const vesid = (rule.vesid || '').toLowerCase();
+                    return readableName.includes(searchTerm) || vesid.includes(searchTerm);
                 });
+            }
+
+            if (this.dom.hideDeprecatedRules && this.dom.hideDeprecatedRules.checked) {
+                rules = rules.filter((rule) => !rule.deprecated);
+            }
+
+            this.state.filteredRules = rules;
+            this.renderRuleList(rules);
+        }
+
+        renderRuleList(rules) {
+            if (!this.dom.ruleList) {
+                return;
+            }
+
+            this.dom.ruleList.innerHTML = '';
+
+            if (rules.length === 0) {
+                this.dom.ruleList.innerHTML = '<div class="rule-empty">No results found</div>';
+                return;
+            }
+
+            const selectedRuleValue = this.dom.ruleSelect ? this.dom.ruleSelect.value : '';
+            const fragment = document.createDocumentFragment();
+
+            rules.forEach((rule) => {
+                const item = document.createElement('div');
+                item.className = `rule-item ${rule.deprecated ? 'deprecated' : ''} ${selectedRuleValue === rule.vesid ? 'selected' : ''}`;
+                item.dataset.vesid = rule.vesid;
+
+                const readableName = rule.readableName || rule.name || rule.vesid;
+                const vesid = rule.vesid;
+
+                item.innerHTML = `
+                    <div class="rule-item-name">${this.escapeHtml(readableName)}</div>
+                    <div class="rule-item-vesid">${this.escapeHtml(vesid)}</div>
+                `;
+
+                fragment.appendChild(item);
+            });
+
+            this.dom.ruleList.appendChild(fragment);
+        }
+
+        handleRuleListClick(event) {
+            const item = event.target.closest('.rule-item');
+            if (!item || !this.dom.ruleList || !this.dom.ruleList.contains(item)) {
+                return;
+            }
+
+            const vesid = item.dataset.vesid;
+            if (!vesid) {
+                return;
+            }
+
+            const rule = this.state.filteredRules.find((candidate) => candidate.vesid === vesid) ||
+                this.state.allRules.find((candidate) => candidate.vesid === vesid);
+            if (rule) {
+                this.selectRule(rule);
+            }
+        }
+
+        selectRule(rule) {
+            const readableName = rule.readableName || rule.name || rule.vesid;
+
+            if (this.dom.ruleSelect) {
+                this.dom.ruleSelect.value = rule.vesid;
+            }
+            if (this.dom.ruleSelectText) {
+                this.dom.ruleSelectText.textContent = readableName;
+            }
+
+            this.closeDropdown();
+            this.checkFormValidity();
+        }
+
+        async handleFormSubmit(event) {
+            event.preventDefault();
+
+            const rule = this.dom.ruleSelect ? this.dom.ruleSelect.value : '';
+            const isPasteMethod = this.dom.pasteMethod ? this.dom.pasteMethod.checked : false;
+
+            if (!rule) {
+                this.showError('Please select a validation rule');
+                if (this.dom.ruleSelect) {
+                    this.dom.ruleSelect.focus();
+                }
+                return;
+            }
+
+            this.setLoadingState(true);
+            this.hideResults();
+
+            try {
+                const formData = new FormData();
+                formData.append('rule', rule);
+
+                if (isPasteMethod) {
+                    const pasteText = this.dom.pasteContent ? this.dom.pasteContent.value.trim() : '';
+                    if (!pasteText) {
+                        this.showError('Please paste XML content');
+                        this.setLoadingState(false);
+                        return;
+                    }
+
+                    this.state.currentXmlContent = pasteText;
+                    const blob = new Blob([pasteText], { type: 'application/xml' });
+                    formData.append('file', blob, 'pasted-content.xml');
+                    formData.append('isPasteContent', 'true');
+                } else {
+                    const pasteText = this.dom.pasteContent ? this.dom.pasteContent.value.trim() : '';
+
+                    if (pasteText && this.state.uploadedFile) {
+                        this.state.currentXmlContent = pasteText;
+                        const blob = new Blob([pasteText], { type: 'application/xml' });
+                        const fileName = this.state.uploadedFileName || 'uploaded-file.xml';
+                        formData.append('file', blob, fileName);
+                    } else {
+                        const file = this.dom.fileInput ? this.dom.fileInput.files[0] : null;
+                        if (!file) {
+                            this.showError('Please select an XML file');
+                            this.setLoadingState(false);
+                            return;
+                        }
+
+                        if (!this.state.currentXmlContent) {
+                            const reader = new FileReader();
+                            reader.onload = (loadEvent) => {
+                                this.state.currentXmlContent = loadEvent.target.result;
+                            };
+                            reader.readAsText(file);
+                        }
+
+                        formData.append('file', file);
+                    }
+                }
+
+                const response = await fetch('validate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    const errorMessage = result.error || result.message || result.errorText || 'Validation error';
+                    throw new Error(errorMessage);
+                }
+
+                if (result.error || result.errorText) {
+                    const errorMessage = result.error || result.errorText || 'Validation error';
+                    this.showError(errorMessage);
+                    return;
+                }
+
+                this.displayResults(result);
+            } catch (error) {
+                console.error('Validation error:', error);
+                this.showError('An error occurred during validation: ' + error.message);
+            } finally {
+                this.setLoadingState(false);
+            }
+        }
+
+        setLoadingState(loading) {
+            if (!this.dom.submitBtn) {
+                return;
+            }
+
+            const btnText = this.dom.submitBtn.querySelector('.btn-text');
+            const btnLoader = this.dom.submitBtn.querySelector('.btn-loader');
+
+            if (loading) {
+                this.dom.submitBtn.disabled = true;
+                if (btnText) {
+                    btnText.textContent = 'Validating...';
+                }
+                if (btnLoader) {
+                    btnLoader.style.display = 'inline-block';
+                }
             } else {
-                // Check if this validation was skipped due to previous validation errors
-                // If there are errors in previous validations (especially XML Schema), this one was skipped
-                const hasPreviousErrors = validationResults.slice(0, index).some(prevVr => {
-                    const prevArtifactType = (prevVr.artifactType || '').toUpperCase();
-                    // Check if previous validation is XML Schema and has errors
-                    return (prevArtifactType.includes('SCHEMA') || prevArtifactType.includes('XSD')) && prevVr.errors > 0;
-                });
-                
-                if (hasPreviousErrors) {
-                    // This validation was skipped
-                    html += '<div class="validation-item skipped">';
-                    html += '<div class="validation-item-message">⏭️ Skipped (previous validation failed)</div>';
-                    html += '</div>';
-                } else {
-                    // No errors in previous validations, so this one passed
-                    html += '<div class="validation-item success">';
-                    html += '<div class="validation-item-message">All fine on this level</div>';
-                    html += '</div>';
+                this.dom.submitBtn.disabled = false;
+                if (btnText) {
+                    btnText.textContent = 'Validate';
                 }
+                if (btnLoader) {
+                    btnLoader.style.display = 'none';
+                }
+                this.checkFormValidity();
             }
-            
-            html += `</div>`;
-        });
-        
-        html += '</div>';
-    }
-    
-    // Add action buttons HTML
-    html += `
-        <div class="action-buttons">
-            <button class="action-btn toggle-json" id="toggleJsonBtn">
-                <span class="btn-icon">📄</span>
-                <span>Show/Hide JSON Result</span>
-            </button>
-            <div class="download-buttons">
-                <button class="action-btn download-btn" id="downloadJsonBtn">
-                    <span class="btn-icon">⬇️</span>
-                    <span>Download JSON Result</span>
-                </button>
-                <button class="action-btn download-btn" id="downloadXmlBtn">
-                    <span class="btn-icon">⬇️</span>
-                    <span>Download XML File</span>
-                </button>
-            </div>
-        </div>
-        <div id="jsonViewer" class="json-viewer" style="display: none;">
-            <pre>${JSON.stringify(result, null, 2)}</pre>
-        </div>
-    `;
-    
-    resultContent.innerHTML = html;
-    
-    // Attach event listeners to buttons after DOM is updated
-    const toggleJsonBtn = document.getElementById('toggleJsonBtn');
-    const downloadJsonBtn = document.getElementById('downloadJsonBtn');
-    const downloadXmlBtn = document.getElementById('downloadXmlBtn');
-    
-    if (toggleJsonBtn) {
-        toggleJsonBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleJsonViewer();
-        };
-    }
-    
-    if (downloadJsonBtn) {
-        downloadJsonBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            downloadJsonResult(result, fileName);
-        };
-    }
-    
-    if (downloadXmlBtn) {
-        downloadXmlBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            downloadXmlFile(fileName);
-        };
-    }
-    
-    // Scroll to results
-    resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-// Format artifact type to readable format
-function formatArtifactType(type) {
-    if (!type) return 'Unknown';
-    
-    const typeUpper = type.toUpperCase();
-    
-    // Check for Schematron patterns
-    if (typeUpper.includes('SCHEMATRON') || typeUpper.includes('SCH')) {
-        // Check for ISO XSLT2 pattern
-        if (type.includes('ISO') && (type.includes('XSLT2') || type.includes('XSLT 2') || type.includes('XSLT-2'))) {
-            return 'Schematron (ISO XSLT2)';
         }
-        // Check for other Schematron variants
-        if (typeUpper.includes('ISO')) {
-            return 'Schematron (ISO)';
+
+        displayResults(result) {
+            if (!this.dom.resultSection || !this.dom.errorSection || !this.dom.resultContent) {
+                return;
+            }
+
+            this.dom.errorSection.style.display = 'none';
+            this.dom.resultSection.style.display = 'block';
+
+            const isSuccess = result.success === true;
+            const fileName = result.fileName || 'Unknown file';
+
+            let totalErrors = 0;
+            let totalWarnings = 0;
+            const validationResults = [];
+
+            if (result.results && Array.isArray(result.results)) {
+                result.results.forEach((resultItem) => {
+                    const items = resultItem.items || [];
+                    let errors = 0;
+                    let warnings = 0;
+                    const itemViews = [];
+
+                    items.forEach((item) => {
+                        const severity = this.getSeverityMeta(item);
+                        if (severity.isError) {
+                            errors += 1;
+                            totalErrors += 1;
+                        } else if (severity.isWarning) {
+                            warnings += 1;
+                            totalWarnings += 1;
+                        }
+
+                        itemViews.push({
+                            itemClass: severity.className,
+                            itemIcon: severity.icon,
+                            errorText: item.errorText || item.message || item.text || '',
+                            errorLocation: item.errorLocation || item.errorLocationStr || '',
+                            errorField: item.errorFieldName || item.field || '',
+                            errorLevel: item.errorLevel || item.severity || ''
+                        });
+                    });
+
+                    validationResults.push({
+                        artifactType: resultItem.artifactType || 'Unknown',
+                        artifactTypeLabel: this.formatArtifactType(resultItem.artifactType || 'Unknown'),
+                        artifactPath: resultItem.artifactPath || '',
+                        success: resultItem.success,
+                        items,
+                        itemViews,
+                        errors,
+                        warnings
+                    });
+                });
+            }
+
+            let html = '';
+
+            const summaryMessage = isSuccess
+                ? `The file <strong>${this.escapeHtml(fileName)}</strong> is valid. It contains <strong>${totalErrors}</strong> errors and <strong>${totalWarnings}</strong> warnings.`
+                : `The file <strong>${this.escapeHtml(fileName)}</strong> is invalid. It contains <strong>${totalErrors}</strong> errors and <strong>${totalWarnings}</strong> warnings.`;
+
+            html += `<div class="validation-summary-message ${isSuccess ? 'success' : 'error'}">${summaryMessage}</div>`;
+
+            if (validationResults.length > 0) {
+                html += '<div class="validation-summary-section">';
+                html += '<h3 class="section-title">Summary</h3>';
+                html += '<table class="validation-summary-table">';
+                html += '<thead><tr><th>Validation type</th><th>Validation artifact</th><th>Warnings</th><th>Errors</th></tr></thead>';
+                html += '<tbody>';
+
+                validationResults.forEach((validationResult) => {
+                    const artifactPath = this.escapeHtml(validationResult.artifactPath);
+                    html += `<tr>
+                        <td>${validationResult.artifactTypeLabel}</td>
+                        <td>${artifactPath}</td>
+                        <td class="count-cell ${validationResult.warnings > 0 ? 'has-warnings' : ''}">${validationResult.warnings}</td>
+                        <td class="count-cell ${validationResult.errors > 0 ? 'has-errors' : ''}">${validationResult.errors}</td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                html += '</div>';
+            }
+
+            if (validationResults.length > 0) {
+                html += '<div class="validation-details-section">';
+                html += '<h3 class="section-title">Details</h3>';
+
+                validationResults.forEach((validationResult, index) => {
+                    const artifactPath = this.escapeHtml(validationResult.artifactPath);
+
+                    html += '<div class="validation-detail-group">';
+                    html += `<h4 class="detail-group-title">${validationResult.artifactTypeLabel} - ${artifactPath}</h4>`;
+
+                    if (validationResult.itemViews && validationResult.itemViews.length > 0) {
+                        validationResult.itemViews.forEach((itemView) => {
+                            const { itemClass, itemIcon, errorText, errorLocation, errorField, errorLevel } = itemView;
+
+                            html += `
+                                <div class="validation-item ${itemClass}">
+                                    <div class="validation-item-title">
+                                        ${itemIcon} ${errorLevel ? this.escapeHtml(errorLevel) : 'Validation Item'}${errorField ? ' - ' + this.escapeHtml(errorField) : ''}
+                                    </div>
+                                    <div class="validation-item-message">
+                                        ${this.escapeHtml(errorText)}
+                                        ${errorLocation ? `<br><small style="color: var(--text-secondary);">Location: ${this.escapeHtml(errorLocation)}</small>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        const hasPreviousErrors = validationResults.slice(0, index).some((prevResult) => {
+                            const prevArtifactType = (prevResult.artifactType || '').toUpperCase();
+                            return (prevArtifactType.includes('SCHEMA') || prevArtifactType.includes('XSD')) && prevResult.errors > 0;
+                        });
+
+                        if (hasPreviousErrors) {
+                            html += '<div class="validation-item skipped">';
+                            html += '<div class="validation-item-message">⏭️ Skipped (previous validation failed)</div>';
+                            html += '</div>';
+                        } else {
+                            html += '<div class="validation-item success">';
+                            html += '<div class="validation-item-message">All fine on this level</div>';
+                            html += '</div>';
+                        }
+                    }
+
+                    html += '</div>';
+                });
+
+                html += '</div>';
+            }
+
+            html += `
+                <div class="action-buttons">
+                    <button class="action-btn toggle-json" id="toggleJsonBtn">
+                        <span class="btn-icon">📄</span>
+                        <span>Show/Hide JSON Result</span>
+                    </button>
+                    <div class="download-buttons">
+                        <button class="action-btn download-btn" id="downloadJsonBtn">
+                            <span class="btn-icon">⬇️</span>
+                            <span>Download JSON Result</span>
+                        </button>
+                        <button class="action-btn download-btn" id="downloadXmlBtn">
+                            <span class="btn-icon">⬇️</span>
+                            <span>Download XML File</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="jsonViewer" class="json-viewer" style="display: none;">
+                    <pre id="jsonViewerContent"></pre>
+                </div>
+            `;
+
+            this.dom.resultContent.innerHTML = html;
+
+            const jsonViewerContent = this.dom.resultContent.querySelector('#jsonViewerContent');
+            if (jsonViewerContent) {
+                jsonViewerContent.textContent = JSON.stringify(result, null, 2);
+            }
+
+            const toggleJsonBtn = this.dom.resultContent.querySelector('#toggleJsonBtn');
+            const downloadJsonBtn = this.dom.resultContent.querySelector('#downloadJsonBtn');
+            const downloadXmlBtn = this.dom.resultContent.querySelector('#downloadXmlBtn');
+
+            if (toggleJsonBtn) {
+                toggleJsonBtn.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.toggleJsonViewer();
+                };
+            }
+
+            if (downloadJsonBtn) {
+                downloadJsonBtn.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.downloadJsonResult(result, fileName);
+                };
+            }
+
+            if (downloadXmlBtn) {
+                downloadXmlBtn.onclick = (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this.downloadXmlFile(fileName);
+                };
+            }
+
+            this.dom.resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        return 'Schematron';
-    }
-    
-    // Check for XML Schema patterns
-    if (typeUpper.includes('SCHEMA') || typeUpper.includes('XSD') || typeUpper.includes('XSDSCHEMA')) {
-        return 'XML Schema';
-    }
-    
-    // Check for XML Syntax patterns
-    if (typeUpper.includes('XML') && (typeUpper.includes('SYNTAX') || typeUpper.includes('PARSER'))) {
-        return 'XML Syntax';
-    }
-    
-    // Check for generic XML
-    if (typeUpper.includes('XML') && !typeUpper.includes('SCHEMA') && !typeUpper.includes('SCHEMATRON')) {
-        return 'XML Syntax';
-    }
-    
-    // Return formatted version
-    return type.split(/[-_\s]+/).map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
-}
 
-// Get item class based on severity
-function getItemClass(item) {
-    const level = (item.errorLevel || item.severity || '').toUpperCase();
-    if (level.includes('ERROR') || level === 'ERROR') {
-        return 'error';
-    } else if (level.includes('WARNING') || level === 'WARNING' || level.includes('WARN')) {
-        return 'warning';
-    }
-    return 'success';
-}
+        formatArtifactType(type) {
+            if (!type) {
+                return 'Unknown';
+            }
 
-// Get item icon based on severity
-function getItemIcon(item) {
-    const level = (item.errorLevel || item.severity || '').toUpperCase();
-    if (level.includes('ERROR') || level === 'ERROR') {
-        return '❌';
-    } else if (level.includes('WARNING') || level === 'WARNING' || level.includes('WARN')) {
-        return '⚠️';
-    }
-    return '✅';
-}
+            const typeUpper = type.toUpperCase();
 
-// Show error message
-function showError(message) {
-    resultSection.style.display = 'none';
-    errorSection.style.display = 'block';
-    errorContent.innerHTML = `
-        <div class="validation-item error">
-            <div class="validation-item-title">❌ Error</div>
-            <div class="validation-item-message">${escapeHtml(message)}</div>
-        </div>
-    `;
-    
-    errorSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
+            if (typeUpper.includes('SCHEMATRON') || typeUpper.includes('SCH')) {
+                if (type.includes('ISO') && (type.includes('XSLT2') || type.includes('XSLT 2') || type.includes('XSLT-2'))) {
+                    return 'Schematron (ISO XSLT2)';
+                }
+                if (typeUpper.includes('ISO')) {
+                    return 'Schematron (ISO)';
+                }
+                return 'Schematron';
+            }
 
-// Hide results
-function hideResults() {
-    resultSection.style.display = 'none';
-    errorSection.style.display = 'none';
-}
+            if (typeUpper.includes('SCHEMA') || typeUpper.includes('XSD') || typeUpper.includes('XSDSCHEMA')) {
+                return 'XML Schema';
+            }
 
-// Toggle JSON viewer
-function toggleJsonViewer() {
-    const jsonViewer = document.getElementById('jsonViewer');
-    if (jsonViewer) {
-        jsonViewer.style.display = jsonViewer.style.display === 'none' ? 'block' : 'none';
-    }
-}
+            if (typeUpper.includes('XML') && (typeUpper.includes('SYNTAX') || typeUpper.includes('PARSER'))) {
+                return 'XML Syntax';
+            }
 
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    if (text == null) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+            if (typeUpper.includes('XML') && !typeUpper.includes('SCHEMA') && !typeUpper.includes('SCHEMATRON')) {
+                return 'XML Syntax';
+            }
 
-// Download JSON result
-function downloadJsonResult(result, fileName) {
-    try {
-        const jsonString = JSON.stringify(result, null, 2);
-        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const baseFileName = fileName ? fileName.replace(/\.xml$/i, '') : 'validation_result';
-        a.download = baseFileName + '_validation_result.json';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-    } catch (error) {
-        console.error('Error downloading JSON:', error);
-        showError('Failed to download JSON result: ' + error.message);
-    }
-}
-
-// Download XML file
-function downloadXmlFile(fileName) {
-    try {
-        if (!currentXmlContent) {
-            showError('No XML content available to download');
-            return;
+            return type
+                .split(/[-_\s]+/)
+                .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
         }
-        const blob = new Blob([currentXmlContent], { type: 'application/xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName || 'document.xml';
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-    } catch (error) {
-        console.error('Error downloading XML:', error);
-        showError('Failed to download XML file: ' + error.message);
+
+        getSeverityMeta(item) {
+            const level = (item.errorLevel || item.severity || '').toUpperCase();
+            if (level.includes('ERROR') || level === 'ERROR') {
+                return { className: 'error', icon: '❌', isError: true, isWarning: false };
+            }
+            if (level.includes('WARNING') || level === 'WARNING' || level.includes('WARN')) {
+                return { className: 'warning', icon: '⚠️', isError: false, isWarning: true };
+            }
+            return { className: 'success', icon: '✅', isError: false, isWarning: false };
+        }
+
+        getItemClass(item) {
+            return this.getSeverityMeta(item).className;
+        }
+
+        getItemIcon(item) {
+            return this.getSeverityMeta(item).icon;
+        }
+
+        showError(message) {
+            if (!this.dom.resultSection || !this.dom.errorSection || !this.dom.errorContent) {
+                return;
+            }
+
+            this.dom.resultSection.style.display = 'none';
+            this.dom.errorSection.style.display = 'block';
+            this.dom.errorContent.innerHTML = `
+                <div class="validation-item error">
+                    <div class="validation-item-title">❌ Error</div>
+                    <div class="validation-item-message">${this.escapeHtml(message)}</div>
+                </div>
+            `;
+
+            this.dom.errorSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        hideResults() {
+            if (this.dom.resultSection) {
+                this.dom.resultSection.style.display = 'none';
+            }
+            if (this.dom.errorSection) {
+                this.dom.errorSection.style.display = 'none';
+            }
+        }
+
+        toggleJsonViewer() {
+            const jsonViewer = this.dom.resultContent ? this.dom.resultContent.querySelector('#jsonViewer') : null;
+            if (!jsonViewer) {
+                return;
+            }
+            jsonViewer.style.display = jsonViewer.style.display === 'none' ? 'block' : 'none';
+        }
+
+        escapeHtml(text) {
+            if (text == null) {
+                return '';
+            }
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        downloadJsonResult(result, fileName) {
+            try {
+                const jsonString = JSON.stringify(result, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                const baseFileName = fileName ? fileName.replace(/\.xml$/i, '') : 'validation_result';
+                link.download = `${baseFileName}_validation_result.json`;
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            } catch (error) {
+                console.error('Error downloading JSON:', error);
+                this.showError('Failed to download JSON result: ' + error.message);
+            }
+        }
+
+        downloadXmlFile(fileName) {
+            try {
+                if (!this.state.currentXmlContent) {
+                    this.showError('No XML content available to download');
+                    return;
+                }
+
+                const blob = new Blob([this.state.currentXmlContent], { type: 'application/xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName || 'document.xml';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 100);
+            } catch (error) {
+                console.error('Error downloading XML:', error);
+                this.showError('Failed to download XML file: ' + error.message);
+            }
+        }
     }
-}
 
-// Make functions available globally
-window.toggleJsonViewer = toggleJsonViewer;
-
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new ValidatorApp();
+        app.init();
+    });
+})();

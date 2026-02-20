@@ -1,0 +1,119 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev_up",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "build_package",
+        "cargo_start"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "dev_down",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "cargo_stop"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "build_package",
+      "type": "shell",
+      "command": "bash",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "JAVA_HOME": "/usr/lib/jvm/msopenjdk-current",
+          "PATH": "/usr/lib/jvm/msopenjdk-current/bin:${env:PATH}"
+        }
+      },
+      "args": [
+        "-lc",
+        "set -euo pipefail; mvn -DskipTests clean package"
+      ],
+      "runOptions": {
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "cargo_start",
+      "type": "shell",
+      "isBackground": true,
+      "command": "bash",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "JAVA_HOME": "/usr/lib/jvm/msopenjdk-current",
+          "PATH": "/usr/lib/jvm/msopenjdk-current/bin:${env:PATH}"
+        }
+      },
+      "args": [
+        "-lc",
+        "set -euo pipefail; mvn -DskipTests cargo:run"
+      ],
+      "runOptions": {
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": {
+        "owner": "cargo",
+        "pattern": {
+          "regexp": "^(.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Tomcat .* starting.*",
+          "endsPattern": ".*Tomcat .* started on port \\[8080\\].*"
+        }
+      }
+    },
+    {
+      "label": "cargo_stop",
+      "type": "shell",
+      "command": "bash",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "JAVA_HOME": "/usr/lib/jvm/msopenjdk-current",
+          "PATH": "/usr/lib/jvm/msopenjdk-current/bin:${env:PATH}"
+        }
+      },
+      "args": [
+        "-lc",
+        "set -euo pipefail; mvn -DskipTests -Dcargo.jvmargs= cargo:stop || true"
+      ],
+      "runOptions": {
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

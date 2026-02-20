@@ -1,0 +1,130 @@
+.error-page {
+  background:
+    radial-gradient(1200px 300px at 50% -120px, rgba(103, 148, 241, 0.18), transparent 65%),
+    #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-page-main {
+  flex: 1;
+  width: 100%;
+  max-width: 920px;
+  margin: 28px auto 36px auto;
+  padding: 0 20px;
+}
+
+.error-hero {
+  background: #ffffff;
+  border: 1px solid rgba(6, 51, 137, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.error-hero-top {
+  height: 6px;
+  background: linear-gradient(90deg, #063389, #6794f1);
+}
+
+.error-hero-content {
+  padding: 34px 30px 30px 30px;
+}
+
+.error-code-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 78px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #063389;
+  background: rgba(103, 148, 241, 0.14);
+  border: 1px solid rgba(103, 148, 241, 0.32);
+}
+
+.error-title {
+  margin: 14px 0 10px 0;
+  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+  font-weight: 700;
+  color: #0f274f;
+}
+
+.error-description {
+  margin: 0;
+  font-size: 1.02rem;
+  color: #4f6481;
+  line-height: 1.6;
+}
+
+.error-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.error-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  border-radius: 10px;
+  padding: 0 18px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.error-btn-primary {
+  background: #063389;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(6, 51, 137, 0.28);
+}
+
+.error-btn-primary:hover {
+  background: #0a428e;
+  transform: translateY(-1px);
+}
+
+.error-btn-secondary {
+  background: #ffffff;
+  color: #063389;
+  border: 1px solid rgba(6, 51, 137, 0.28);
+}
+
+.error-btn-secondary:hover {
+  background: rgba(103, 148, 241, 0.08);
+  transform: translateY(-1px);
+}
+
+.error-help {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #6b7f98;
+}
+
+.error-page footer {
+  margin-top: 0;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .error-hero-content {
+    padding: 26px 20px 22px 20px;
+  }
+
+  .error-actions {
+    flex-direction: column;
+  }
+
+  .error-btn {
+    width: 100%;
+  }
+}

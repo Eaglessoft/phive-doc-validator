@@ -1,0 +1,37 @@
+{
+  "name": "PHIVE Doc Validator Dev",
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": ".."
+  },
+  "workspaceMount": "source=${localWorkspaceFolder},target=/work,type=bind",
+  "workspaceFolder": "/work",
+  "shutdownAction": "stopContainer",
+  "forwardPorts": [8080, 8000],
+  "mounts": [
+    "source=${localWorkspaceFolder}/data/.m2,target=/home/vscode/.m2,type=bind",
+    "source=${localWorkspaceFolder}/data/.codex,target=/home/vscode/.codex,type=bind"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "redhat.java",
+        "vscjava.vscode-maven",
+        "openai.chatgpt",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-java-dependency"
+      ],
+      "settings": {
+        "remote.restoreForwardedPorts": true,
+        "java.configuration.runtimes": [
+          {
+            "name": "JavaSE-25",
+            "path": "/usr/local/sdkman/candidates/java/current",
+            "default": true
+          }
+        ]
+      }
+    }
+  }
+}

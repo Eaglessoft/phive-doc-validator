@@ -25,6 +25,21 @@
     --border-color: #e2e8f0;
     --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --primary-bg-03: rgba(103, 148, 241, 0.03);
+    --primary-bg-05: rgba(103, 148, 241, 0.05);
+    --primary-bg-08: rgba(103, 148, 241, 0.08);
+    --primary-bg-10: rgba(103, 148, 241, 0.1);
+    --primary-bg-50: rgba(103, 148, 241, 0.5);
+    --primary-focus-02: rgba(103, 148, 241, 0.2);
+    --primary-focus-03: rgba(103, 148, 241, 0.3);
+    --brand-bg-05: rgba(6, 51, 137, 0.05);
+    --brand-bg-10: rgba(6, 51, 137, 0.1);
+    --brand-border-20: rgba(6, 51, 137, 0.2);
+    --brand-border-30: rgba(6, 51, 137, 0.3);
+}
+
+.is-hidden {
+    display: none;
 }
 
 body {
@@ -94,17 +109,6 @@ header {
     gap: 8px;
 }
 
-.logo-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.logo-container img {
-    max-height: 60px;
-    width: auto;
-}
-
 header h1 {
     font-size: 2rem;
     font-weight: 600;
@@ -128,6 +132,7 @@ header h1 {
     box-shadow: var(--shadow-lg);
     margin-bottom: 20px;
     transition: transform 0.2s, box-shadow 0.2s;
+    overflow: visible;
 }
 
 .card:hover {
@@ -164,14 +169,14 @@ header h1 {
     border-radius: 8px;
     background: var(--bg-color);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 
 .file-label:hover {
     border-color: var(--primary-color);
-    background: rgba(103, 148, 241, 0.05);
+    background: var(--primary-bg-05);
 }
 
 .file-label input[type="file"] {
@@ -206,7 +211,7 @@ header h1 {
     display: flex;
     gap: 0;
     margin-bottom: 20px;
-    background: rgba(103, 148, 241, 0.08);
+    background: var(--primary-bg-08);
     border-radius: 8px;
     padding: 4px;
     border: 1px solid var(--border-color);
@@ -232,7 +237,7 @@ header h1 {
     gap: 8px;
     padding: 12px 20px;
     border-radius: 6px;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
     color: var(--text-secondary);
     font-weight: 500;
     font-size: 0.95rem;
@@ -268,7 +273,7 @@ header h1 {
     display: flex;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    background: rgba(103, 148, 241, 0.03);
+    background: var(--primary-bg-03);
     transition: border-color 0.3s;
     max-height: 400px;
     overflow-y: auto;
@@ -277,11 +282,11 @@ header h1 {
 
 .textarea-wrapper:focus-within {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
+    box-shadow: 0 0 0 3px var(--primary-bg-10);
 }
 
 .line-numbers {
-    background: rgba(103, 148, 241, 0.05);
+    background: var(--primary-bg-05);
     padding: 12px 8px;
     text-align: right;
     font-family: 'Courier New', monospace;
@@ -313,36 +318,17 @@ header h1 {
     max-height: none;
     transition: none;
     line-height: 1.6;
-    outline: none;
     overflow-y: auto;
+}
+
+.paste-textarea:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
 }
 
 .paste-textarea::placeholder {
     color: var(--text-secondary);
     opacity: 0.5;
-}
-
-.select-wrapper {
-    position: relative;
-}
-
-select {
-    width: 100%;
-    padding: 12px 40px 12px 15px;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--card-bg);
-    font-size: 1rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    appearance: none;
-    transition: border-color 0.3s;
-}
-
-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
 }
 
 .select-arrow {
@@ -358,7 +344,7 @@ select:focus {
 /* Custom Select Styles */
 .custom-select-wrapper {
     position: relative;
-    z-index: 10000;
+    z-index: 500;
 }
 
 .custom-select-trigger {
@@ -382,7 +368,12 @@ select:focus {
 
 .custom-select-trigger.active {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(103, 148, 241, 0.1);
+    box-shadow: 0 0 0 3px var(--primary-bg-10);
+}
+
+.custom-select-trigger:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .custom-select-trigger .select-arrow {
@@ -406,11 +397,20 @@ select:focus {
     border-radius: 0 0 8px 8px;
     max-height: 400px;
     overflow: hidden;
-    z-index: 9999;
+    z-index: 1000;
     box-shadow: var(--shadow-lg);
     margin-top: 2px;
     display: flex;
     flex-direction: column;
+}
+
+.custom-select-dropdown.is-hidden {
+    display: none;
+}
+
+.upload-section {
+    position: relative;
+    z-index: 200;
 }
 
 .rule-search-in-dropdown {
@@ -432,9 +432,13 @@ select:focus {
 }
 
 .rule-search-in-dropdown #ruleSearch:focus {
-    outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(103, 148, 241, 0.1);
+    box-shadow: 0 0 0 2px var(--primary-bg-10);
+}
+
+.rule-search-in-dropdown #ruleSearch:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
 }
 
 .rule-search-in-dropdown .search-icon {
@@ -450,7 +454,7 @@ select:focus {
 .rule-filter-options {
     padding: 10px 15px;
     border-bottom: 1px solid var(--border-color);
-    background: rgba(103, 148, 241, 0.03);
+    background: var(--primary-bg-03);
 }
 
 .filter-checkbox-label {
@@ -500,7 +504,7 @@ select:focus {
 }
 
 .rule-item.selected {
-    background: rgba(103, 148, 241, 0.1);
+    background: var(--primary-bg-10);
     border-left: 3px solid var(--primary-color);
 }
 
@@ -551,7 +555,7 @@ select:focus {
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -561,7 +565,7 @@ select:focus {
 .btn-primary:hover:not(:disabled) {
     background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(103, 148, 241, 0.4);
+    box-shadow: 0 4px 12px var(--primary-focus-03);
 }
 
 .btn-primary:active:not(:disabled) {
@@ -569,7 +573,7 @@ select:focus {
 }
 
 .btn-primary:disabled {
-    background: rgba(103, 148, 241, 0.5);
+    background: var(--primary-bg-50);
     cursor: not-allowed;
     opacity: 0.7;
 }
@@ -607,70 +611,13 @@ select:focus {
 
 .result-section .card h2 {
     color: var(--primary-hover);
-    border-bottom: 2px solid rgba(6, 51, 137, 0.2);
+    border-bottom: 2px solid var(--brand-border-20);
     padding-bottom: 15px;
     margin-bottom: 25px;
 }
 
 .error-card {
     border-left: 4px solid var(--error-color);
-}
-
-.result-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 2px solid var(--primary-hover);
-}
-
-.result-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.result-status.success {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.result-status.error {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.result-info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.info-item {
-    padding: 12px;
-    background: rgba(6, 51, 137, 0.05);
-    border-radius: 6px;
-    border-left: 3px solid var(--primary-hover);
-}
-
-.info-label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.info-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
 }
 
 /* Validation Summary Styles */
@@ -708,7 +655,7 @@ select:focus {
     color: var(--primary-hover);
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(6, 51, 137, 0.3);
+    border-bottom: 2px solid var(--brand-border-30);
 }
 
 .validation-summary-table {
@@ -721,7 +668,7 @@ select:focus {
 }
 
 .validation-summary-table thead {
-    background: rgba(6, 51, 137, 0.1);
+    background: var(--brand-bg-10);
 }
 
 .validation-summary-table th {
@@ -732,7 +679,7 @@ select:focus {
     color: var(--primary-hover);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid rgba(6, 51, 137, 0.3);
+    border-bottom: 2px solid var(--brand-border-30);
 }
 
 .validation-summary-table td {
@@ -747,7 +694,7 @@ select:focus {
 }
 
 .validation-summary-table tbody tr:hover {
-    background: rgba(6, 51, 137, 0.05);
+    background: var(--brand-bg-05);
 }
 
 .count-cell {
@@ -766,12 +713,12 @@ select:focus {
 .validation-detail-group {
     margin-bottom: 25px;
     padding: 15px;
-    background: rgba(6, 51, 137, 0.05);
+    background: var(--brand-bg-05);
     border-radius: 8px;
     border-left: 4px solid var(--primary-hover);
-    border-top: 1px solid rgba(6, 51, 137, 0.2);
-    border-right: 1px solid rgba(6, 51, 137, 0.2);
-    border-bottom: 1px solid rgba(6, 51, 137, 0.2);
+    border-top: 1px solid var(--brand-border-20);
+    border-right: 1px solid var(--brand-border-20);
+    border-bottom: 1px solid var(--brand-border-20);
 }
 
 .detail-group-title {
@@ -780,17 +727,7 @@ select:focus {
     color: var(--primary-hover);
     margin-bottom: 15px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(6, 51, 137, 0.3);
-}
-
-.validation-details {
-    margin-top: 20px;
-}
-
-.details-header {
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--text-primary);
+    border-bottom: 1px solid var(--brand-border-30);
 }
 
 .validation-item {
@@ -911,7 +848,7 @@ select:focus {
     font-size: 0.95rem;
     font-weight: 500;
     color: var(--text-primary);
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
     font-family: inherit;
 }
 
@@ -920,12 +857,12 @@ select:focus {
     color: white;
     border-color: var(--primary-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(103, 148, 241, 0.3);
+    box-shadow: 0 4px 12px var(--primary-focus-03);
 }
 
 .action-btn:active {
     transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(103, 148, 241, 0.2);
+    box-shadow: 0 2px 6px var(--primary-focus-02);
 }
 
 .action-btn .btn-icon {
@@ -940,7 +877,7 @@ footer {
     padding: 30px 20px;
     text-align: center;
     position: relative;
-    z-index: 1;
+    z-index: 0;
 }
 
 .footer-content {
@@ -978,15 +915,22 @@ footer .footer-link:hover {
     text-decoration: underline;
 }
 
-/* Loading spinner */
-.spinner {
-    border: 3px solid var(--border-color);
-    border-top: 3px solid var(--primary-color);
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .card:hover,
+    .btn-primary:hover:not(:disabled),
+    .action-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
 }
 
 /* Responsive */
@@ -1012,16 +956,8 @@ footer .footer-link:hover {
         font-size: 0.9rem;
     }
     
-    .logo-container img {
-        max-height: 50px;
-    }
-    
     .card {
         padding: 20px;
-    }
-    
-    .result-info {
-        grid-template-columns: 1fr;
     }
     
     footer {
@@ -1038,21 +974,8 @@ footer .footer-link:hover {
         flex-direction: column;
         align-items: stretch;
     }
-    
-    
-    .save-buttons {
-        width: 100%;
-        justify-content: flex-end;
-    }
-    
     .action-btn {
         width: 100%;
         justify-content: center;
     }
-    
-    .save-buttons .action-btn {
-        width: auto;
-        flex: 1;
-    }
 }
-

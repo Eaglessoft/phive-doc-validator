@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Base href will be set dynamically by JavaScript -->
-    <base id="baseTag" href="/peppol-e-invoice-xml-document-validator/">
+    <base href="__APP_BASE_HREF__">
 
     <!-- Primary Meta Tags -->
     <title>Peppol e-document Validator | Eaglessoft</title>
@@ -33,13 +32,9 @@
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="sources/Varlik-7.png?v=1.0">
-    <link rel="alternate icon" type="image/png" href="sources/Varlik-7.png?v=1.0">
     <link rel="apple-touch-icon" href="sources/Varlik-7.png?v=1.0">
     <link rel="manifest" href="site.webmanifest?v=1.0">
     <meta name="theme-color" content="#063389">
-    
-    <!-- Fallback favicon -->
-    <link rel="shortcut icon" href="sources/Varlik-7.png?v=1.0">
     <link rel="stylesheet" href="styles.css?v=1.0">
 </head>
 <body>
@@ -91,7 +86,7 @@
                             </div>
                         </div>
 
-                        <div class="form-group" id="fileUploadGroup" style="display: none;">
+                        <div class="form-group is-hidden" id="fileUploadGroup">
                             <label for="fileInput" class="file-label">
                                 <span class="file-icon">📄</span>
                                 <span class="file-text" id="fileText">Select XML file</span>
@@ -106,7 +101,7 @@
                                     <span id="ruleSelectText">Select a rule...</span>
                                     <span class="select-arrow">▼</span>
                                 </div>
-                                <div class="custom-select-dropdown" id="ruleDropdown" style="display: none;">
+                                <div class="custom-select-dropdown is-hidden" id="ruleDropdown">
                                     <div class="rule-search-in-dropdown">
                                         <input type="text" 
                                                id="ruleSearch" 
@@ -131,20 +126,20 @@
 
                         <button type="submit" id="submitBtn" class="btn-primary" disabled>
                             <span class="btn-text">Validate</span>
-                            <span class="btn-loader" style="display: none;">⏳</span>
+                            <span class="btn-loader is-hidden">⏳</span>
                         </button>
                     </form>
                 </div>
             </div>
 
-            <div id="resultSection" class="result-section" style="display: none;">
+            <div id="resultSection" class="result-section is-hidden">
                 <div class="card">
                     <h2>Validation Results</h2>
                     <div id="resultContent"></div>
                 </div>
             </div>
 
-            <div id="errorSection" class="error-section" style="display: none;">
+            <div id="errorSection" class="error-section is-hidden">
                 <div class="card error-card">
                     <h2>❌ Error</h2>
                     <div id="errorContent"></div>
@@ -155,12 +150,11 @@
         <footer>
             <div class="footer-content">
                 <p class="footer-brand">Eaglessoft</p>
-                <p class="footer-tech">Powered by <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer" class="footer-link">Phive</a> (Philip Helger)</p>
+                <p class="footer-tech">Powered by <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer" class="footer-link">Phive</a> (Philip Helger) | Source: <a href="https://github.com/eaglessoft/phive-doc-validator" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a></p>
             </div>
         </footer>
     </div>
 
-    <script src="app.js?v=1.0"></script>
+    <script defer src="app.js?v=1.0"></script>
 </body>
 </html>
-
