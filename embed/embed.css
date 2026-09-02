@@ -2,47 +2,52 @@
 /* All styles are prefixed with .peppol-e-invoice-xml-document-validator to avoid conflicts */
 
 .peppol-e-invoice-xml-document-validator {
-    --peppol-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    --peppol-font-mono: 'Courier New', monospace;
+    --peppol-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --peppol-font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
 
-    --peppol-color-text: #1e293b;
-    --peppol-color-text-muted: #64748b;
+    --peppol-color-text: #212b45;
+    --peppol-color-text-muted: #5a6478;
     --peppol-color-surface: #ffffff;
-    --peppol-color-border: #e2e8f0;
-    --peppol-color-primary: #6794f1;
-    --peppol-color-primary-strong: #063389;
-    --peppol-color-success: #10b981;
-    --peppol-color-success-strong: #065f46;
-    --peppol-color-warning: #f59e0b;
-    --peppol-color-warning-strong: #92400e;
-    --peppol-color-warning-stronger: #78350f;
-    --peppol-color-danger: #ef4444;
-    --peppol-color-danger-strong: #991b1b;
+    --peppol-color-border: #c6d2e8;
+    --peppol-color-primary: #3761ad;
+    --peppol-color-primary-strong: #273378;
+    --peppol-color-success: #0f7a60;
+    --peppol-color-success-strong: #0b5c48;
+    --peppol-color-warning: #8a5a00;
+    --peppol-color-warning-strong: #6b4600;
+    --peppol-color-warning-stronger: #573900;
+    --peppol-color-danger: #b3261e;
+    --peppol-color-danger-strong: #7c2424;
+    /* The JSON viewer used to borrow --peppol-color-text for its background and
+       --peppol-color-border for its text, so retheming either one broke it. */
+    --peppol-color-primary-fg: #ffffff;
+    --peppol-color-code-bg: #18213c;
+    --peppol-color-code-fg: #dbe3f5;
 
-    --peppol-bg-primary-soft-3: rgba(103, 148, 241, 0.03);
-    --peppol-bg-primary-soft-5: rgba(103, 148, 241, 0.05);
-    --peppol-bg-primary-soft-8: rgba(103, 148, 241, 0.08);
-    --peppol-bg-primary-soft-10: rgba(103, 148, 241, 0.1);
-    --peppol-bg-primary-soft-50: rgba(103, 148, 241, 0.5);
-    --peppol-bg-primary-strong-soft-5: rgba(6, 51, 137, 0.05);
-    --peppol-bg-primary-strong-soft-10: rgba(6, 51, 137, 0.1);
-    --peppol-bg-success-soft: #d1fae5;
-    --peppol-bg-warning-soft: #fef3c7;
-    --peppol-bg-danger-soft: #fee2e2;
+    --peppol-bg-primary-soft-3: color-mix(in srgb, var(--peppol-color-primary) 4%, transparent);
+    --peppol-bg-primary-soft-5: color-mix(in srgb, var(--peppol-color-primary) 6%, transparent);
+    --peppol-bg-primary-soft-8: color-mix(in srgb, var(--peppol-color-primary) 9%, transparent);
+    --peppol-bg-primary-soft-10: color-mix(in srgb, var(--peppol-color-primary) 12%, transparent);
+    --peppol-bg-primary-soft-50: color-mix(in srgb, var(--peppol-color-primary) 45%, transparent);
+    --peppol-bg-primary-strong-soft-5: color-mix(in srgb, var(--peppol-color-primary) 6%, transparent);
+    --peppol-bg-primary-strong-soft-10: color-mix(in srgb, var(--peppol-color-primary) 12%, transparent);
+    --peppol-bg-success-soft: #e7f7f1;
+    --peppol-bg-warning-soft: #fdf5e3;
+    --peppol-bg-danger-soft: #fdecec;
     --peppol-bg-surface-soft-50: rgba(255, 255, 255, 0.5);
 
-    --peppol-border-primary-strong-soft-20: rgba(6, 51, 137, 0.2);
-    --peppol-border-primary-strong-soft-30: rgba(6, 51, 137, 0.3);
+    --peppol-border-primary-strong-soft-20: color-mix(in srgb, var(--peppol-color-primary) 22%, transparent);
+    --peppol-border-primary-strong-soft-30: color-mix(in srgb, var(--peppol-color-primary) 32%, transparent);
 
     --peppol-radius-sm: 6px;
-    --peppol-radius-md: 8px;
-    --peppol-radius-lg: 12px;
+    --peppol-radius-md: 9px;
+    --peppol-radius-lg: 16px;
 
-    --peppol-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --peppol-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --peppol-shadow-primary-sm: 0 2px 6px rgba(103, 148, 241, 0.2);
-    --peppol-shadow-primary-md: 0 4px 12px rgba(103, 148, 241, 0.3);
-    --peppol-shadow-primary-lg: 0 4px 12px rgba(103, 148, 241, 0.4);
+    --peppol-shadow-sm: 0 1px 3px rgba(33, 43, 69, 0.08);
+    --peppol-shadow-lg: 0 10px 28px rgba(33, 43, 69, 0.10);
+    --peppol-shadow-primary-sm: 0 2px 6px color-mix(in srgb, var(--peppol-color-primary) 20%, transparent);
+    --peppol-shadow-primary-md: 0 4px 12px color-mix(in srgb, var(--peppol-color-primary) 28%, transparent);
+    --peppol-shadow-primary-lg: 0 4px 12px color-mix(in srgb, var(--peppol-color-primary) 34%, transparent);
 
     display: block;
     font-family: var(--peppol-font-family);
@@ -98,18 +103,16 @@
 }
 
 /* Input Method Selector */
+/* Underlined tabs, not a segmented pill - see the note in styles.css. The
+   accent stays reserved for the primary action. */
 .peppol-input-method-selector {
     display: flex;
-    gap: 0;
+    gap: 22px;
     margin-bottom: 20px;
-    background: var(--peppol-bg-primary-soft-8);
-    border-radius: var(--peppol-radius-md);
-    padding: 4px;
-    border: 1px solid var(--peppol-color-border);
+    border-bottom: 1px solid var(--peppol-color-border);
 }
 
 .peppol-method-tab {
-    flex: 1;
     cursor: pointer;
     user-select: none;
     position: relative;
@@ -122,40 +125,33 @@
 }
 
 .peppol-method-tab-content {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
     gap: 8px;
-    padding: 12px 20px;
-    border-radius: var(--peppol-radius-sm);
-    transition: all 0.3s ease;
+    padding: 10px 2px 9px;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.18s ease, border-color 0.18s ease;
     color: var(--peppol-color-text-muted);
-    font-weight: 500;
-    font-size: 0.95rem;
-}
-
-.peppol-method-tab:not(.active) .peppol-method-tab-content {
-    background: transparent;
-}
-
-.peppol-method-tab.active .peppol-method-tab-content {
-    background: var(--peppol-color-surface);
-    color: var(--peppol-color-primary);
     font-weight: 600;
-    box-shadow: var(--peppol-shadow-sm);
+    font-size: 0.92rem;
 }
 
 .peppol-method-tab:not(.active):hover .peppol-method-tab-content {
     color: var(--peppol-color-text);
-    background: var(--peppol-bg-surface-soft-50);
+}
+
+.peppol-method-tab.active .peppol-method-tab-content {
+    color: var(--peppol-color-text);
+    border-bottom-color: var(--peppol-color-primary);
 }
 
 .peppol-method-icon {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
 }
 
 .peppol-method-text {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
 }
 
 /* Form Groups */
@@ -326,7 +322,7 @@
     background: var(--peppol-color-surface);
     border: 2px solid var(--peppol-color-border);
     border-top: none;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--peppol-radius-md) var(--peppol-radius-md);
     max-height: 400px;
     overflow: hidden;
     z-index: 9999;
@@ -466,7 +462,7 @@
     text-align: center;
     position: relative;
     z-index: 1;
-    border-radius: 0 0 12px 12px;
+    border-radius: 0 0 var(--peppol-radius-lg) var(--peppol-radius-lg);
 }
 
 .peppol-footer-content {
@@ -517,7 +513,7 @@
     width: 100%;
     padding: 14px 24px;
     background: var(--peppol-color-primary);
-    color: white;
+    color: var(--peppol-color-primary-fg);
     border: none;
     border-radius: var(--peppol-radius-md);
     font-size: 1.1rem;
@@ -541,9 +537,11 @@
 }
 
 .peppol-btn-primary:disabled {
-    background: var(--peppol-bg-primary-soft-50);
+    background: var(--peppol-color-surface);
+    color: var(--peppol-color-text-muted);
+    border: 1px solid var(--peppol-color-border);
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 1;
 }
 
 .peppol-btn-loader {
@@ -806,7 +804,7 @@
 
 .peppol-action-btn:hover {
     background: var(--peppol-color-primary);
-    color: white;
+    color: var(--peppol-color-primary-fg);
     border-color: var(--peppol-color-primary);
     transform: translateY(-2px);
     box-shadow: var(--peppol-shadow-primary-md);
@@ -823,8 +821,8 @@
 
 /* JSON Viewer */
 .peppol-json-viewer {
-    background: var(--peppol-color-text);
-    color: var(--peppol-color-border);
+    background: var(--peppol-color-code-bg);
+    color: var(--peppol-color-code-fg);
     padding: 20px;
     border-radius: var(--peppol-radius-md);
     overflow-x: auto;
@@ -863,4 +861,33 @@
         width: 100%;
         justify-content: center;
     }
+}
+
+/* Parity with styles.css, which has carried this since before the embed was
+   split out. */
+@media (prefers-reduced-motion: reduce) {
+    .peppol-e-invoice-xml-document-validator *,
+    .peppol-e-invoice-xml-document-validator *::before,
+    .peppol-e-invoice-xml-document-validator *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .peppol-e-invoice-xml-document-validator .peppol-btn-primary:hover:not(:disabled),
+    .peppol-e-invoice-xml-document-validator .peppol-action-btn:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* Set by embed.js instead of the hardcoded hexes it used to write inline, so a
+   host page overriding --peppol-color-primary gets these too. */
+.peppol-e-invoice-xml-document-validator .peppol-file-text.peppol-has-file {
+    color: var(--peppol-color-primary);
+    font-weight: 600;
+}
+
+.peppol-e-invoice-xml-document-validator .peppol-error-location {
+    color: var(--peppol-color-text-muted);
 }

@@ -1,0 +1,427 @@
+/* Docnaut Tools - shared theme layer.
+
+   CANONICAL COPY. This file lives here, in the portal, and is copied verbatim
+   into each tool repository:
+
+     peppol-lookup-participant/app/static/tools-theme.css
+     phive-doc-validator/src/main/webapp/tools-theme.css
+     saxon-xslt-service/src/main/resources/static/tools-theme.css
+
+   Never edit a copy. Edit this file, then run scripts/sync-theme.sh, which
+   rewrites the copies, bumps the ?v= cache-buster in each tool's HTML, and
+   fails loudly if one had drifted.
+
+   The portal loads this file too, ahead of its own styles.css. That is not a
+   convenience - it is the drift guard. While the portal kept a second copy of
+   these rules inside styles.css, an edit here could disagree with the landing
+   page and nothing would notice. Now the landing page is the first thing that
+   breaks.
+
+   WHAT TRAVELS. The palette, the chrome (header, footer, theme toggle), the
+   workspace token layer, and the TOOL shell - the one-screen layout every tool
+   page uses. What does NOT travel is the portal's three-card grid (.tool*,
+   .cta*, es-shine) and the max-height cascade tuned to it: that cascade is
+   sized to a card grid's content height and would fire at the wrong points on a
+   tool page. The portal keeps it in styles.css.
+
+   Three considered departures from the portal's own styles.css, each correct
+   for every tool page:
+
+   1. The header and footer clamps that styles.css applies down in its
+      single-screen layer are folded into the base rules here, and the static
+      values they used to override (66px / 46px / 54px) are gone. Every tool
+      page is height-constrained; there is no scenario where the static values
+      are wanted.
+
+   2. `.hero-tool` is added. The portal has no need for it; it is the compact
+      hero - kicker and h1, no lede, no meta list - that all three tools use
+      above their working area, and it would otherwise be triplicated. It was
+      briefly folded into the header to buy back the ~79px it costs; the pages
+      came out cramped and it was put back.
+
+   3. Tool pages carry no sibling-tool nav. Once you are in a tool you have
+      already chosen; the way back to the index is the brand lockup itself,
+      exactly as on the portal. `.hnav` therefore holds only the outbound link,
+      which is why the 720px rule below hides nothing on a tool page - it is
+      kept so this file stays a faithful copy of the portal's header CSS. */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+img{max-width:100%;display:block}
+.hnav,.meta,.f-links{list-style:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------------- palette ----------------
+   Three states: no attribute follows the OS, data-theme="light" forces light,
+   data-theme="dark" forces dark. Every colour has its base value on bare :root
+   and only the deltas are repeated. NOTHING may be defined only inside the
+   media query - that breaks the forced-light case.
+
+   A token whose value is itself a var() of a token that already flips
+   (--ws-recess: var(--bg)) belongs on bare :root ONLY. Custom properties
+   substitute at use time, so it follows the theme for free; repeating it in the
+   dark blocks would be noise. */
+:root{
+  color-scheme:light;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-mono:'JetBrains Mono',SFMono-Regular,Consolas,'Liberation Mono',Menlo,monospace;
+  --font-display:'Space Grotesk','Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --bg:#f1f5fd; --card:#ffffff;
+  --fg:#212b45; --muted:#5a6478; --muted2:#666e80;
+  --line2:#c6d2e8; --tint:#eaf0fb;
+  --accent:#3761ad; --accent-fg:#ffffff; --mint:#45c4a0; --mint-fg:#0d3b30;
+  --spec:linear-gradient(90deg,#273378,#3761ad,#45c4a0);
+  /* the h1 paints with this: raw mint is 1.99:1 on the page, so its stop is
+     darkened to #12866a (4.14:1) for text only. The strips keep --spec. */
+  --spec-text:linear-gradient(90deg,#273378,#3761ad,#12866a);
+  --shine:linear-gradient(100deg,#0000 0%,#0000 40%,#fff9 48%,#ffff 50%,#fff9 52%,#0000 60%,#0000 100%);
+  --shadow:0 1px 3px rgba(33,43,69,.06); --shadow-hi:0 18px 42px rgba(33,43,69,.12);
+  --wrap-w:1440px; --radius:16px; --radius-sm:9px;
+  --kicker-tt:uppercase; --kicker-ls:.14em;
+  --h1-ls:-.03em; --h1-lh:1.08; --h1-weight:700;
+
+  /* ONE width, on all four pages, for the chrome AND the working area. The
+     brand lockup and the footer land on the same x wherever you are, and within
+     a page the header starts on the same left edge as the content under it.
+
+     --work-w exists as the seam for a tool whose content genuinely cannot live
+     at --wrap-w. Nothing overrides it today, and overriding it is not free: the
+     header would then be inset from the content it sits above, which reads worse
+     inside one page than a shifting lockup does between pages. The transformer
+     ran at 1680 and that is exactly how it looked.
+
+     1440, not the 1240 the portal was designed at: two code panes split it into
+     ~715px each, about 84 monospaced characters, and the landing page's three
+     cards are better at 468px wide than at 400. */
+  --work-w:var(--wrap-w);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#0e1526; --card:#18213c;
+  --fg:#eef2fa; --muted:#a9b4cc; --muted2:#828da8;
+  --line2:#33436b; --tint:#1e2a49;
+  --accent:#8fb0ec; --accent-fg:#0e1526;
+  --spec:linear-gradient(90deg,#4a6fc0,#6b93de,#5fd9b4);
+  --spec-text:linear-gradient(90deg,#6b93de,#8fb0ec,#5fd9b4);
+  --shadow:0 2px 10px rgba(0,0,0,.45); --shadow-hi:0 22px 48px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0e1526; --card:#18213c;
+  --fg:#eef2fa; --muted:#a9b4cc; --muted2:#828da8;
+  --line2:#33436b; --tint:#1e2a49;
+  --accent:#8fb0ec; --accent-fg:#0e1526;
+  --spec:linear-gradient(90deg,#4a6fc0,#6b93de,#5fd9b4);
+  --spec-text:linear-gradient(90deg,#6b93de,#8fb0ec,#5fd9b4);
+  --shadow:0 2px 10px rgba(0,0,0,.45); --shadow-hi:0 22px 48px rgba(0,0,0,.6);
+}
+
+/* ---------------- workspace layer ----------------
+   Status colours, working surfaces and the code-pane palette. This lived twice,
+   independently, in saxon's app.css and phive's styles.css - agreeing exactly on
+   eight light values written out by hand in two repos, and disagreeing silently
+   on four others, so a success chip was one colour in the validator and another
+   in the transformer. Peppol expressed the same ideas a third time as --pl-*.
+
+   Where the three disagreed, the majority won; where it was 1-1, saxon won for
+   code/editor tokens (it is the dedicated editor) and phive for report/status
+   tokens (it is the dedicated report).
+
+   What is NOT here is what is genuinely one tool's: saxon's error-card surfaces
+   and custom scrollbar thumbs, phive's JSON viewer and its color-mix tint ramp,
+   peppol's --pl-* set. The last of those must stay self-contained in
+   embed/embed.css - it is the public embed override contract and has to render
+   in a host page that never loads this file. */
+:root{
+  --ws-ok:#0f7a60;   --ws-ok-bg:#e7f7f1;   --ws-ok-fg:#0b5c48;
+  --ws-warn:#8a5a00; --ws-warn-bg:#fdf5e3; --ws-warn-fg:#6b4600;
+  --ws-err:#b3261e;  --ws-err-bg:#fdecec;  --ws-err-fg:#7c2424;
+
+  --ws-soft:#f4f8ff; --ws-soft-hi:#e7eefc; --ws-raised:#ffffff;
+  --ws-recess:var(--bg);
+  --ws-shadow:0 10px 28px rgba(33,43,69,.10);
+  --ws-shadow-sm:0 1px 3px rgba(33,43,69,.08);
+
+  /* --ws-code-bg is set per theme rather than aliased to --bg. Recessing the
+     editor below the card reads nicely, but in light mode it also drops every
+     syntax colour onto a blue-grey and costs ~9% of their contrast - so light
+     gets white, which is what code panes do, and dark keeps the recess where it
+     is free. */
+  --ws-code-bg:#ffffff; --ws-code-fg:#27364d;
+
+  /* editor chrome. color-mix keeps these on whatever --accent currently is, so
+     they invert with the theme and need no dark counterpart. */
+  --ws-gutter-active:color-mix(in srgb,var(--accent) 10%,transparent);
+  --ws-line-active:color-mix(in srgb,var(--accent) 6%,transparent);
+  --ws-select:color-mix(in srgb,var(--accent) 30%,transparent);
+  --ws-select-match:color-mix(in srgb,var(--accent) 18%,transparent);
+
+  /* XML syntax palette. Both the transformer and the validator highlight XML;
+     they had separate copies that agreed on five stops and disagreed on --x-meta. */
+  --x-tag:#134a94; --x-attr:#0a6250; --x-val:#7a4300; --x-punc:#48546e;
+  --x-comment:#5b6780; --x-meta:#a3126e; --x-text:#1f2733;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ws-ok:#5fd9b4;   --ws-ok-bg:#14413a;   --ws-ok-fg:#a8ecd6;
+  --ws-warn:#f0c060; --ws-warn-bg:#453516; --ws-warn-fg:#f7dda0;
+  --ws-err:#ffb4ab;  --ws-err-bg:#4a2028;  --ws-err-fg:#f2b8b5;
+
+  --ws-soft:#1e2a49; --ws-soft-hi:#26355a; --ws-raised:#28345a;
+  --ws-shadow:0 10px 28px rgba(0,0,0,.45);
+  --ws-shadow-sm:0 1px 3px rgba(0,0,0,.40);
+
+  --ws-code-bg:#0e1526; --ws-code-fg:#d7e0f2;
+
+  --x-tag:#8fb0ec; --x-attr:#5fd9b4; --x-val:#f0c060; --x-punc:#7f8aa6;
+  --x-comment:#8892a8; --x-meta:#f79ac8; --x-text:#eceff5;
+}}
+:root[data-theme="dark"]{
+  --ws-ok:#5fd9b4;   --ws-ok-bg:#14413a;   --ws-ok-fg:#a8ecd6;
+  --ws-warn:#f0c060; --ws-warn-bg:#453516; --ws-warn-fg:#f7dda0;
+  --ws-err:#ffb4ab;  --ws-err-bg:#4a2028;  --ws-err-fg:#f2b8b5;
+
+  --ws-soft:#1e2a49; --ws-soft-hi:#26355a; --ws-raised:#28345a;
+  --ws-shadow:0 10px 28px rgba(0,0,0,.45);
+  --ws-shadow-sm:0 1px 3px rgba(0,0,0,.40);
+
+  --ws-code-bg:#0e1526; --ws-code-fg:#d7e0f2;
+
+  --x-tag:#8fb0ec; --x-attr:#5fd9b4; --x-val:#f0c060; --x-punc:#7f8aa6;
+  --x-comment:#8892a8; --x-meta:#f79ac8; --x-text:#eceff5;
+}
+
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--font);color:var(--fg);background:var(--bg);line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+.wrap{width:min(100% - 44px, var(--wrap-w));margin-inline:auto}
+.wrap-work{width:min(100% - 44px, var(--work-w));margin-inline:auto}
+a{color:inherit}
+svg{flex:0 0 auto}
+
+/* ---------------- header ----------------
+   "Tools" sits at the BOTTOM-RIGHT of the lockup so it reads as a sub-product
+   of Docnaut rather than as a word standing beside the logo. The whole lockup
+   links to the portal root: that is the way back out of a tool. */
+.site-hdr{flex:0 0 auto}
+.site-hdr .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;
+  min-height:clamp(48px,6.2vh,62px)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.brand{display:flex;align-items:flex-end;gap:0;text-decoration:none}
+.brand img{height:clamp(38px,5vh,50px);width:auto}
+.brand .tag{padding:1px 7px 2px;border-radius:var(--radius-sm);
+  border:1px solid var(--line2);background:var(--card);
+  color:var(--accent);font-family:var(--font-mono);font-size:.72rem;font-weight:500;
+  letter-spacing:.02em;line-height:1.45;
+  /* on the lockup's baseline at its right end. NOT tucked under it: the
+     wordmark runs to the very edge of the image, so a negative margin lands
+     the chip on top of "PLATFORM". */
+  margin-left:8px;margin-bottom:3px}
+.hnav{display:flex;align-items:center;gap:3px}
+.hnav a{display:inline-block;padding:7px 12px;border-radius:var(--radius-sm);color:var(--muted);
+  text-decoration:none;font-size:.88rem;font-weight:500;
+  transition:color .18s ease,background-color .18s ease}
+.hnav a:hover,.hnav a:focus-visible{color:var(--fg);outline:none}
+.hnav a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hnav .out{display:inline-flex;align-items:center;gap:6px;margin-left:8px;color:var(--accent);
+  font-weight:600}
+.hnav .ext{width:12px;height:12px;stroke-width:2.4}
+
+/* the two logo lockups: only one is ever displayed, so only one is announced */
+.brand .logo-d{display:none}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .brand .logo-l{display:none}
+  :root:not([data-theme="light"]) .brand .logo-d{display:block}
+}
+:root[data-theme="dark"] .brand .logo-l{display:none}
+:root[data-theme="dark"] .brand .logo-d{display:block}
+
+/* ---------------- theme toggle ---------------- */
+.theme-toggle{display:inline-grid;place-items:center;width:34px;height:34px;flex:0 0 auto;
+  border:1px solid var(--line2);border-radius:var(--radius-sm);background:var(--card);
+  color:var(--muted);cursor:pointer;
+  transition:color .18s ease,border-color .18s ease,background-color .18s ease}
+.theme-toggle:hover{color:var(--fg);border-color:var(--accent)}
+.theme-toggle:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.theme-toggle svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.theme-toggle .i-sun{display:none}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .theme-toggle .i-moon{display:none}
+  :root:not([data-theme="light"]) .theme-toggle .i-sun{display:block}
+}
+:root[data-theme="dark"] .theme-toggle .i-moon{display:none}
+:root[data-theme="dark"] .theme-toggle .i-sun{display:block}
+
+/* ---------------- hero ---------------- */
+.hero{overflow:hidden}
+.kicker{display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);letter-spacing:var(--kicker-ls);
+  text-transform:var(--kicker-tt);color:var(--muted2)}
+h1{font-family:var(--font-display);font-weight:var(--h1-weight);
+  line-height:var(--h1-lh);letter-spacing:var(--h1-ls);color:var(--fg)}
+h1 em{font-style:normal;color:var(--accent)}
+.lede{max-width:72ch;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 18px}
+.meta li{display:inline-flex;align-items:center;gap:8px;color:var(--muted);
+  font-size:clamp(.7rem,.66rem + .16vh,.8rem)}
+.meta .d{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* --- the compact hero every tool page uses ---
+   No lede and no meta list: a tool needs the vertical room for its working
+   area. h1 runs to 40ch rather than the portal's 26ch because a tool's name is
+   a label, not a headline, and wrapping it costs a line for nothing.
+
+   This band costs ~79px, which is about four lines of editor. It was folded
+   into the header once to buy those lines back and the pages came out visibly
+   cramped, so it stays: a tool page that breathes is worth more than four
+   lines. */
+.hero-tool{flex:0 0 auto;padding:clamp(8px,1.4vh,16px) 0 clamp(6px,1vh,12px)}
+.hero-tool .kicker{margin-bottom:clamp(4px,.7vh,9px);
+  font-size:clamp(.62rem,.56rem + .25vh,.72rem)}
+.hero-tool h1{font-size:clamp(1.25rem,.95rem + .8vw + .6vh,1.9rem);max-width:40ch}
+
+/* ---------------- tool shell ----------------
+   The first screen fits; after that the PAGE scrolls, normally, and the footer
+   goes with it.
+
+   There is no viewport lock here and that is deliberate. Pinning the header and
+   footer and scrolling a region between them looked tidy on an empty page, but
+   the moment a tool produced a long answer - a validation report, a list of
+   document types - you were reading it through a letterbox a few hundred pixels
+   tall, squeezed between two bars that would not move. A report wants the whole
+   window.
+
+   So: `min-height`, not `height`. The chrome takes its natural height, the
+   working area absorbs whatever is left of the FIRST screen, and anything the
+   tool adds below simply makes the document taller. Empty, the page fills the
+   viewport exactly and there is nothing to scroll - which is the property that
+   matters, and the one the lock was really there for.
+
+   `flex:1 0 auto` on the main region: grow into the first screen, never shrink
+   below content. The shrink is what let a card be laid out shorter than the
+   thing inside it, and a too-short card does not clip, it paints over whatever
+   comes next. */
+html{height:100%}
+body.tool-page{min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;overflow-x:hidden}
+.tool-page .site-hdr,.tool-page .site-ftr{flex:0 0 auto}
+.tool-page .tool-main{flex:1 0 auto;display:flex;flex-direction:column}
+
+/* ---------------- buttons ----------------
+   Two families, and they are not interchangeable. .btn is the marketing pair
+   from docnaut.com - blue primary, mint secondary - used on the portal's CTA;
+   note .btn-ghost is a solid mint fill despite the name. .btn-primary is the
+   working control a tool submits with, and it lived twice with different
+   padding, size and width behaviour before it came here. */
+.btn{display:inline-flex;align-items:center;gap:8px;
+  padding:clamp(8px,1.3vh,11px) clamp(15px,1.6vw,21px);
+  border-radius:var(--radius-sm);font-size:clamp(.79rem,.75rem + .2vh,.89rem);
+  font-weight:600;text-decoration:none;white-space:nowrap;
+  transition:transform .2s ease,background-color .2s ease,opacity .2s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.btn-solid{background:var(--accent);color:var(--accent-fg)}
+.btn-solid:hover{opacity:.9}
+.btn-ghost{background:var(--mint);color:var(--mint-fg)}
+.btn-ghost:hover{background:#3bb491}
+.btn .bi{width:15px;height:15px;stroke-width:2.3}
+
+/* The old #6794f1 behind white text was 2.96:1 - a hard WCAG failure on a
+   tool's most important control. --accent is 6.04:1 light, 8.31:1 dark.
+   brightness() for the hover saves a second token and works in both themes. */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-height:38px;padding:10px 16px;border:none;border-radius:var(--radius-sm);
+  background:var(--accent);color:var(--accent-fg);
+  font-family:var(--font);font-size:.88rem;font-weight:600;cursor:pointer;
+  transition:filter .2s ease,transform .2s ease,background-color .2s ease}
+.btn-primary:hover:not(:disabled){filter:brightness(.92);transform:translateY(-1px)}
+.btn-primary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none;filter:none}
+.btn-block{width:100%}
+
+/* ---------------- footer ----------------
+   No rule above the footer. A divider earns its place when content scrolls
+   underneath it; here it would just slice the composition into bands. */
+.site-ftr{flex:0 0 auto;margin-top:clamp(8px,1.2vh,14px);
+  padding:clamp(8px,1.2vh,14px) 0 clamp(10px,1.4vh,16px)}
+.site-ftr .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:14px}
+.f-brand{color:var(--muted2);font-size:clamp(.72rem,.68rem + .16vh,.84rem)}
+.f-brand strong{font-family:var(--font-display);font-weight:600;color:var(--fg);font-size:.89rem}
+.f-links{display:flex;flex-wrap:wrap;gap:8px 20px}
+.f-links a{color:var(--muted);text-decoration:none;transition:color .18s ease;
+  font-size:clamp(.72rem,.68rem + .16vh,.84rem)}
+.f-links a:hover{color:var(--accent)}
+.f-links a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* A second, quieter footer line. Tools run other people's engines - Saxon-HE,
+   PHIVE, the Peppol network's own discovery - and naming them, with a link to
+   the source, belongs on the page rather than only in a README. The portal has
+   no engine to credit, so it never renders this. */
+.f-tech{margin-top:5px;color:var(--muted2);
+  font-size:clamp(.68rem,.65rem + .14vh,.78rem);line-height:1.5}
+.f-tech a{color:var(--muted);text-decoration:none;transition:color .18s ease}
+.f-tech a:hover{color:var(--accent)}
+.f-tech a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ---------------- responsive ---------------- */
+@media(max-width:720px){
+  .hnav li:not(.out-li){display:none}
+  .hnav .out{margin-left:0}
+  .site-ftr .wrap{flex-direction:column;align-items:flex-start}
+}
+
+/* ---------------- page scrollbar ----------------
+   Two mechanisms exist and they are not equivalent. `scrollbar-color` is the
+   standard one (Firefox, Chrome 121+, Safari 18.2+) and offers exactly two
+   colours; `::-webkit-scrollbar` gives full control but is non-standard and
+   Blink/WebKit only. Both are used here, standard first.
+
+   `color-scheme` on :root already hands the UA a dark scrollbar in dark mode -
+   that part is free. This only brings the thumb onto the palette.
+
+   Width is deliberately left alone. `scrollbar-width: thin` is tempting and
+   makes the page look tidier, but it shrinks a target that some people rely on
+   to navigate, and this is the scrollbar for the entire page. Inner code panes
+   are a different case and do use thin. */
+html {
+  scrollbar-color: var(--line2) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--line2);
+  border: 4px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--muted2);
+  background-clip: content-box;
+}
+
+/* ---------------- brand accents ----------------
+   The h1 phrase paints with --spec-text, whose mint stop is darkened until
+   every stop clears 3:1. The kicker strip keeps the vivid --spec: a graphic
+   carrying no text has no ratio to meet. */
+@keyframes es-flow{from{background-position:0 0}to{background-position:200% 0}}
+
+.kicker .bar{position:relative;width:44px;height:3px;border-radius:3px;background:var(--spec);
+  background-size:200% 100%;animation:es-flow 9s linear infinite}
+.kicker .bar::after{content:'';position:absolute;inset:0;border-radius:inherit;
+  background:inherit;background-size:200% 100%;filter:blur(6px);opacity:.9;
+  animation:es-flow 9s linear infinite}
+
+h1 em{background:var(--spec-text);-webkit-background-clip:text;background-clip:text;
+  color:transparent}
+@supports not ((-webkit-background-clip:text) or (background-clip:text)){
+  h1 em{background:none;color:var(--accent)}
+}

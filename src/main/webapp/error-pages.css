@@ -1,31 +1,45 @@
+/* 404 / 500 only, loaded after styles.css.
+
+   The chrome (header, footer) comes from tools-theme.css exactly as on the main
+   page, so all this file owns is the hero card. Every colour goes through a
+   portal token, which is what makes these pages follow the theme the visitor
+   picked on any other Docnaut tool. */
+
 .error-page {
+  /* A wash of the accent behind the top of the card, over the page colour.
+     color-mix keeps it on --accent, so it inverts with the theme instead of
+     staying a fixed blue. */
   background:
-    radial-gradient(1200px 300px at 50% -120px, rgba(103, 148, 241, 0.18), transparent 65%),
-    #f8fafc;
+    radial-gradient(1200px 300px at 50% -120px,
+      color-mix(in srgb, var(--accent) 20%, transparent), transparent 65%),
+    var(--bg);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
 .error-page-main {
-  flex: 1;
-  width: 100%;
+  flex: 1 0 auto;
   max-width: 920px;
-  margin: 28px auto 36px auto;
-  padding: 0 20px;
+  margin-top: clamp(16px, 3vh, 32px);
+  margin-bottom: clamp(20px, 4vh, 40px);
 }
 
 .error-hero {
-  background: #ffffff;
-  border: 1px solid rgba(6, 51, 137, 0.12);
-  border-radius: 18px;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+  background: var(--card);
+  border: 1px solid var(--line2);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
+/* The portal's own accent strip, same gradient and the same slow drift. */
 .error-hero-top {
   height: 6px;
-  background: linear-gradient(90deg, #063389, #6794f1);
+  background: var(--spec);
+  background-size: 200% 100%;
+  animation: es-flow 11s linear infinite;
 }
 
 .error-hero-content {
@@ -39,33 +53,39 @@
   min-width: 78px;
   height: 34px;
   padding: 0 14px;
-  border-radius: 999px;
-  font-size: 0.9rem;
-  font-weight: 700;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 500;
   letter-spacing: 0.04em;
-  color: #063389;
-  background: rgba(103, 148, 241, 0.14);
-  border: 1px solid rgba(103, 148, 241, 0.32);
+  color: var(--accent);
+  background: var(--tint);
+  border: 1px solid var(--line2);
 }
 
 .error-title {
-  margin: 14px 0 10px 0;
-  font-size: clamp(1.8rem, 2.8vw, 2.4rem);
+  font-family: var(--font-display);
+  margin: 16px 0 10px 0;
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
   font-weight: 700;
-  color: #0f274f;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: var(--fg);
+  max-width: 22ch;
 }
 
 .error-description {
   margin: 0;
-  font-size: 1.02rem;
-  color: #4f6481;
+  font-size: 1rem;
+  color: var(--muted);
   line-height: 1.6;
+  max-width: 62ch;
 }
 
 .error-actions {
   margin-top: 24px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -73,46 +93,50 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 46px;
-  border-radius: 10px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
   padding: 0 18px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.89rem;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, filter 0.2s ease;
 }
 
+.error-btn:hover {
+  transform: translateY(-2px);
+}
+
+.error-btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* The old primary was #063389 behind white text; --accent is 6.04:1 in light
+   and 8.31:1 in dark. */
 .error-btn-primary {
-  background: #063389;
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(6, 51, 137, 0.28);
+  background: var(--accent);
+  color: var(--accent-fg);
 }
 
 .error-btn-primary:hover {
-  background: #0a428e;
-  transform: translateY(-1px);
+  filter: brightness(0.92);
 }
 
 .error-btn-secondary {
-  background: #ffffff;
-  color: #063389;
-  border: 1px solid rgba(6, 51, 137, 0.28);
+  background: var(--card);
+  color: var(--fg);
+  border: 1px solid var(--line2);
 }
 
 .error-btn-secondary:hover {
-  background: rgba(103, 148, 241, 0.08);
-  transform: translateY(-1px);
+  background: var(--tint);
+  border-color: var(--accent);
 }
 
 .error-help {
   margin-top: 16px;
-  font-size: 0.9rem;
-  color: #6b7f98;
-}
-
-.error-page footer {
-  margin-top: 0;
-  background: transparent;
+  font-size: 0.85rem;
+  color: var(--muted2);
 }
 
 @media (max-width: 640px) {

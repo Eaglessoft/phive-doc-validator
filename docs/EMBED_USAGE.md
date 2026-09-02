@@ -101,6 +101,8 @@ Main variables:
 - `--peppol-color-success`
 - `--peppol-color-warning`
 - `--peppol-color-danger`
+- `--peppol-color-code-bg` — JSON viewer background
+- `--peppol-color-code-fg` — JSON viewer text
 - `--peppol-radius-sm`
 - `--peppol-radius-md`
 - `--peppol-radius-lg`
@@ -109,6 +111,15 @@ Main variables:
 - `--peppol-shadow-primary-sm`
 - `--peppol-shadow-primary-md`
 - `--peppol-shadow-primary-lg`
+
+> The widget ships the Docnaut Tools palette. Every value above is a default you
+> can override; the names are stable and will not be renamed.
+>
+> `--peppol-color-code-bg` and `--peppol-color-code-fg` are new. The JSON viewer
+> previously borrowed `--peppol-color-text` for its background and
+> `--peppol-color-border` for its text, so overriding either of those silently
+> wrecked its contrast. It now has tokens of its own; if you had worked around
+> that, you can drop the workaround.
 
 ## Legacy Compatibility
 

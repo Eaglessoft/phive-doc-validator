@@ -3,43 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>500 Server Error | Peppol e-document Validator</title>
-  <link rel="icon" type="image/png" href="sources/Varlik-7.png?v=1.0">
-  <link rel="stylesheet" href="styles.css?v=1.0">
-  <link rel="stylesheet" href="error-pages.css?v=1.0">
+
+  <!-- Rendered by ErrorPageServlet, not served as a static file. web.xml
+       dispatches here internally while the address bar stays on the URL that
+       failed, so without this every relative asset below would resolve against
+       that URL instead of the application root. -->
+  <base href="__APP_BASE_HREF__">
+
+  <title>Something went wrong | Docnaut Tools</title>
+  <meta name="description" content="The Peppol Document Validator hit an unexpected error.">
+  <meta name="robots" content="noindex">
+
+  <meta name="theme-color" content="#f1f5fd" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1526" media="(prefers-color-scheme: dark)">
+  <link rel="icon" type="image/png" sizes="32x32" href="sources/icon-32.png?v=1.2.2">
+  <link rel="apple-touch-icon" href="sources/apple-touch-icon.png?v=1.2.2">
+
+  <script>/* applied before first paint so a stored choice never flashes the other theme */
+(function(){try{var t=localStorage.getItem("dn-theme");
+if(t!=="dark"&&t!=="light")return;
+document.documentElement.setAttribute("data-theme",t);
+var c=t==="dark"?"#0e1526":"#f1f5fd",m=document.querySelectorAll('meta[name="theme-color"]');
+for(var i=0;i<m.length;i++)m[i].setAttribute("content",c);}catch(e){}})();</script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="tools-theme.css?v=3494670425">
+  <link rel="stylesheet" href="styles.css?v=1.2.2">
+  <link rel="stylesheet" href="error-pages.css?v=1.2.2">
 </head>
 <body class="error-page">
-  <div class="top-bar">
-    <div class="top-bar-content">
-      <a href="https://eaglessoft.com/" target="_blank" rel="noopener noreferrer" class="logo-container">
-        <img src="sources/EAGLESSOFT-White@3x.png?v=1.0" alt="Eaglessoft Logo">
+  <header class="site-hdr">
+    <div class="wrap">
+      <a class="brand" href="/">
+        <img class="logo-l" src="sources/docnaut_logo.webp" alt="Docnaut" width="1200" height="236">
+        <img class="logo-d" src="sources/docnaut_light_logo.webp" alt="Docnaut" width="1200" height="236">
+        <span class="tag">Tools</span>
       </a>
+      <div class="hdr-right">
+        <nav aria-label="Docnaut"><ul class="hnav">
+          <li class="out-li"><a class="out" href="https://www.docnaut.com/" target="_blank" rel="noopener noreferrer">docnaut.com <svg class="ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg></a></li>
+        </ul></nav>
+        <button class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.4A8.4 8.4 0 1 1 9.6 4a6.8 6.8 0 0 0 10.4 10.4z"/></svg><svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.1"/><path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M18.7 5.3l-1.5 1.5M6.8 17.2l-1.5 1.5"/></svg>
+        </button>
+      </div>
     </div>
-  </div>
+  </header>
 
-  <main class="error-page-main">
-    <section class="error-hero" aria-labelledby="errorTitle500">
+  <main class="error-page-main wrap">
+    <section class="error-hero" aria-labelledby="errorTitle">
       <div class="error-hero-top"></div>
       <div class="error-hero-content">
         <span class="error-code-chip">500</span>
-        <h1 class="error-title" id="errorTitle500">Unexpected Server Error</h1>
+        <h1 class="error-title" id="errorTitle">Something went wrong on our side</h1>
         <p class="error-description">
-          Something went wrong while handling your request. The issue may be temporary.
+          The request could not be completed. Trying again often works; if it keeps happening, the document may be triggering a fault in the validation engine.
         </p>
         <div class="error-actions">
-          <a class="error-btn error-btn-primary" href="/">Back to Validator</a>
-          <a class="error-btn error-btn-secondary" href="/api">Check API Status</a>
+          <a class="error-btn error-btn-primary" href="./">Go to the validator</a>
+          <a class="error-btn error-btn-secondary" href="api">API status</a>
+          <a class="error-btn error-btn-secondary" href="/">All Docnaut tools</a>
         </div>
-        <p class="error-help">If the issue continues, please try again in a few moments.</p>
+        <p class="error-help">Nothing you sent was stored. Retry, or report it if it persists.</p>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="footer-content">
-      <p class="footer-brand">Eaglessoft</p>
-      <p class="footer-tech">Developed by Eaglessoft. Validation engine powered by <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer" class="footer-link">phive (phax)</a>, created by Philip Helger. Source: <a href="https://github.com/eaglessoft/phive-doc-validator" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>.</p>
+  <footer class="site-ftr">
+    <div class="wrap">
+      <p class="f-brand"><strong>Docnaut</strong> &middot; Powered by Eaglessoft &middot; &copy; 2026</p>
+      <nav class="f-links" aria-label="Footer">
+        <a href="https://www.docnaut.com/about-us-docnaut/" target="_blank" rel="noopener noreferrer">About</a>
+        <a href="https://www.docnaut.com/contact-us-docnaut/" target="_blank" rel="noopener noreferrer">Contact</a>
+        <a href="https://eaglessoft.com/privacy-policy/" target="_blank" rel="noopener noreferrer">Privacy</a>
+        <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer">Phive</a>
+      </nav>
+      <p class="f-tech">Built on <a href="https://github.com/phax/phive" target="_blank" rel="noopener noreferrer">PHIVE</a> (Philip Helger) &middot; Source: <a href="https://github.com/eaglessoft/phive-doc-validator" target="_blank" rel="noopener noreferrer">GitHub</a></p>
     </div>
   </footer>
+
+  <script>
+(function(){
+  var btn=document.querySelector(".theme-toggle"); if(!btn) return;
+  var mq=window.matchMedia("(prefers-color-scheme: dark)"), root=document.documentElement;
+  function current(){return root.getAttribute("data-theme")||(mq.matches?"dark":"light");}
+  function sync(){
+    var dark=current()==="dark";
+    btn.setAttribute("aria-label",dark?"Switch to light theme":"Switch to dark theme");
+    btn.setAttribute("aria-pressed",String(dark));
+    var c=dark?"#0e1526":"#f1f5fd",m=document.querySelectorAll('meta[name="theme-color"]');
+    for(var i=0;i<m.length;i++)m[i].setAttribute("content",c);
+  }
+  btn.addEventListener("click",function(){
+    var next=current()==="dark"?"light":"dark";
+    root.setAttribute("data-theme",next);
+    try{localStorage.setItem("dn-theme",next);}catch(e){}
+    sync();
+  });
+  if(mq.addEventListener)mq.addEventListener("change",sync);
+  sync();
+})();
+  </script>
 </body>
 </html>
