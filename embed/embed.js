@@ -515,13 +515,13 @@
 
             if (!file) {
                 fileText.textContent = 'Select XML file';
-                fileText.style.color = '#64748b';
+                fileText.classList.remove('peppol-has-file');
                 this.checkFormValidity();
                 return;
             }
 
             fileText.textContent = file.name;
-            fileText.style.color = '#6794f1';
+            fileText.classList.add('peppol-has-file');
 
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -739,7 +739,7 @@
                                     </div>
                                     <div class="peppol-validation-item-message">
                                         ${escapeHtml(errorText)}
-                                        ${errorLocation ? `<br><small style="color: #64748b;">Location: ${escapeHtml(errorLocation)}</small>` : ''}
+                                        ${errorLocation ? `<br><small class="peppol-error-location">Location: ${escapeHtml(errorLocation)}</small>` : ''}
                                     </div>
                                 </div>
                             `;

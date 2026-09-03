@@ -1,0 +1,13 @@
+# Everything in this repo is a build context for a Linux container, so the
+# working tree stays LF on every platform. Without this, a Windows clone with
+# core.autocrlf=true rewrites the shell scripts and the Containerfile to CRLF
+# and they go into the image that way - a CRLF shebang makes the kernel report
+# "no such file or directory" for a file that is plainly there, which is how
+# this was found: the validator image built cleanly and then refused to start.
+* text=auto eol=lf
+
+# Binary: never touch these
+*.png  binary
+*.webp binary
+*.ico  binary
+*.jar  binary

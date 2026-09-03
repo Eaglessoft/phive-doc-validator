@@ -1,155 +1,220 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* Peppol Document Validator - the working surface.
 
+   tools-theme.css ships the palette, the page chrome and the type scale; it is
+   a verbatim copy shared with the other Docnaut tools and must never be edited
+   here. This file owns only what is specific to the validator.
+
+   The legacy variable names below are INTERNAL to this file. The public
+   override contract is the --peppol-* set in embed/embed.css, which is
+   documented in docs/EMBED_USAGE.md and must never be renamed. Rebinding these
+   internal names onto the portal palette, rather than renaming every call site,
+   means every rule that already went through a token follows light/dark for
+   free - and custom-property substitution is lazy, so the indirection costs
+   nothing at runtime. */
+
+/* ---------------- validator-only tokens ----------------
+   The --ws-* status colours, working surfaces, code-pane background and shadows
+   are in tools-theme.css now. They used to be declared here AND, stop for stop,
+   in the transformer's app.css - agreeing on eight light values written out by
+   hand in two repos and disagreeing silently on four others, so a success chip
+   was one colour here and another there.
+
+   What is left is the validator's own: the JSON viewer's fixed dark surface and
+   the accent tint ramp. Same three-state rule as everywhere: nothing may be
+   defined only inside the media query, or the forced-light case breaks. */
 :root {
-    --primary-color: #6794f1;
-    --primary-hover: #063389;
-    --primary-active: #063389;
-    --secondary-color: #000000;
-    --third-color: #106cc7;
-    --link-color: #6794f1;
-    --link-hover: #063389;
-    --link-active: #063389;
-    --success-color: #10b981;
-    --error-color: #ef4444;
-    --warning-color: #f59e0b;
-    --warning-bg: #fef3c7;
-    --warning-border: #f59e0b;
-    --bg-color: #ffffff;
-    --card-bg: #ffffff;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    --primary-bg-03: rgba(103, 148, 241, 0.03);
-    --primary-bg-05: rgba(103, 148, 241, 0.05);
-    --primary-bg-08: rgba(103, 148, 241, 0.08);
-    --primary-bg-10: rgba(103, 148, 241, 0.1);
-    --primary-bg-50: rgba(103, 148, 241, 0.5);
-    --primary-focus-02: rgba(103, 148, 241, 0.2);
-    --primary-focus-03: rgba(103, 148, 241, 0.3);
-    --brand-bg-05: rgba(6, 51, 137, 0.05);
-    --brand-bg-10: rgba(6, 51, 137, 0.1);
-    --brand-border-20: rgba(6, 51, 137, 0.2);
-    --brand-border-30: rgba(6, 51, 137, 0.3);
+    --ws-json-bg: #18213c;
+    --ws-json-fg: #dbe3f5;
+
+    /* legacy names, rebound onto the portal palette */
+    --primary-color: var(--accent);
+    --primary-hover: var(--accent);
+    --primary-active: var(--accent);
+    --link-color: var(--accent);
+    --link-hover: var(--accent);
+    --success-color: var(--ws-ok);
+    --error-color: var(--ws-err);
+    --warning-color: var(--ws-warn);
+    --warning-bg: var(--ws-warn-bg);
+    --warning-border: var(--ws-warn);
+    --bg-color: var(--ws-recess);
+    --card-bg: var(--card);
+    --text-primary: var(--fg);
+    --text-secondary: var(--muted);
+    --border-color: var(--line2);
+    --shadow-lg: var(--ws-shadow);
+
+    /* The old rgba() tints were keyed to a fixed blue. color-mix keeps them on
+       whatever --accent currently is, so they invert with the theme. */
+    --primary-bg-03: color-mix(in srgb, var(--accent) 4%, transparent);
+    --primary-bg-05: color-mix(in srgb, var(--accent) 6%, transparent);
+    --primary-bg-08: color-mix(in srgb, var(--accent) 9%, transparent);
+    --primary-bg-10: color-mix(in srgb, var(--accent) 12%, transparent);
+    --primary-bg-50: color-mix(in srgb, var(--accent) 45%, transparent);
+    --primary-focus-02: color-mix(in srgb, var(--accent) 20%, transparent);
+    --primary-focus-03: color-mix(in srgb, var(--accent) 28%, transparent);
+    --brand-bg-05: color-mix(in srgb, var(--accent) 6%, transparent);
+    --brand-bg-10: color-mix(in srgb, var(--accent) 12%, transparent);
+    --brand-border-20: color-mix(in srgb, var(--accent) 22%, transparent);
+    --brand-border-30: color-mix(in srgb, var(--accent) 32%, transparent);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --ws-json-bg: #0b1120;
+} }
+:root[data-theme="dark"] {
+    --ws-json-bg: #0b1120;
 }
 
+/* app.js drives every show/hide through this class now - it used to set inline
+   display, which made the class inert after the first interaction. !important
+   is what lets it win against the display values the components carry. */
 .is-hidden {
-    display: none;
+    display: none !important;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #ffffff;
-    min-height: 100vh;
-    padding: 0;
-    margin: 0;
-    color: var(--text-primary);
+/* The shell is in tools-theme.css and shared with the other two tools: the
+   form fills the first screen, and the report below it makes the document
+   taller so the PAGE scrolls. The report gets the whole window that way,
+   instead of a letterbox between a pinned header and a pinned footer. */
+.tool-main {
+    padding-bottom: 8px;
 }
 
-.top-bar {
-    background: var(--primary-hover);
-    width: 100%;
-    padding: 8px 0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    min-height: 60px;
-    display: block;
-}
+/* The card is the working surface, so it takes the height that is left rather
+   than dictating the document height. Everything fixed inside it - the rule
+   select, the method tabs, the submit button - keeps its size; the editor
+   absorbs the difference.
 
-.top-bar-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-}
-
-.top-bar .logo-container {
-    display: flex;
-    align-items: center;
-    text-decoration: none;
-    transition: opacity 0.2s ease;
-}
-
-.top-bar .logo-container:hover {
-    opacity: 0.9;
-}
-
-.top-bar .logo-container img {
-    max-height: 60px;
-    height: auto;
-    width: auto;
-    display: block;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
-
-header {
-    background: #ffffff;
-    border-bottom: 1px solid var(--border-color);
-    padding: 10px 0;
-    margin-bottom: 20px;
-}
-
-.header-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
+   NO min-height:0 on this chain, and that is the whole point. min-height:0
+   would let flex shrink the card below its own content once the result section
+   claims room, and a card shorter than its content does not clip - it spills,
+   painting the rule select and the editor straight over the report. (Which is
+   what happened: the first validation put "Validation Rule:" on top of
+   "Validation Results".) Leaving min-height at its `auto` default means
+   min-content propagates up from .textarea-wrapper's clamp, so the card shrinks
+   to exactly the editor's floor and then stops. */
+.upload-section {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
+    flex: 1 1 auto;
+    /* The card used to supply this; without it the controls sat against the h1. */
+    padding-top: clamp(14px, 2.6vh, 28px);
 }
 
-header h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--text-primary);
-    text-align: center;
+/* Required marker, matching the lookup form. */
+.req {
+    color: var(--ws-err);
+    font-weight: 700;
+    margin-left: 2px;
 }
 
-.subtitle {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 400;
-    text-align: center;
-    margin: 0;
+/* The form card fills the region, so its own bottom margin would push 9px past
+   the bottom and raise a scrollbar with nothing to scroll. The gap below it is
+   only wanted when something follows, so the following thing owns it. */
+.upload-section > .card {
+    margin-bottom: 0;
 }
+
+/* Results take their natural height and push the form up; the region scrolls
+   around them. The form does not vanish - it shrinks to the editor's own floor,
+   so re-editing and re-validating never means scrolling back up to find it. */
+.result-section,
+.error-section {
+    flex: 0 0 auto;
+    margin-top: clamp(12px, 1.6vh, 20px);
+}
+
+ /* No card around the controls. The working surface is the editor; wrapping the
+    whole form in a panel made a wide, mostly empty slab and put a second border
+    around something that already has one. The other two tools read the same way:
+    a row of controls, then the surface. */
+.upload-section > .card {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    padding: 0;
+}
+
+/* Stacked, because this is a sequence and not a set of parameters: choose a
+   rule, then give it a document, then validate. Side by side the three read as
+   independent controls, which is right for the lookup's search band and wrong
+   here. Placed by area rather than by moving markup - app.js binds these nodes
+   by id. */
+.upload-section > .card > form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "rule" "tabs" "editor" "submit";
+    justify-items: center;
+    row-gap: clamp(10px, 1.5vh, 16px);
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* The rule select does not need the full width of a 1440px page. */
+#validationForm > .form-group:first-of-type { width: 100%; max-width: 620px; }
+
+#validationForm > #submitBtn { min-width: 200px; }
+
+/* The label sits above the select, so this group is taller than its row-mates;
+   they align on the controls' baseline rather than the group's box. */
+#validationForm > .form-group:first-of-type {
+    grid-area: rule;
+    margin-bottom: 0;
+}
+
+/* The editor shares the column the controls sit in, so the whole page runs on
+   one centre line. Wider than the rule select because it is the working
+   surface, but not edge to edge. */
+#validationForm > #pasteContentGroup,
+#validationForm > #fileUploadGroup {
+    grid-area: editor;
+    width: 100%;
+    max-width: 1040px;
+}
+#validationForm > #submitBtn { grid-area: submit; }
+
+@supports selector(:has(*)) {
+    #validationForm > .form-group:has(.input-method-selector) {
+        grid-area: tabs;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 900px) {
+    #validationForm > #submitBtn { justify-self: stretch; }
+}
+
+/* The label rides with its control. */
+#validationForm > .form-group:first-of-type label { display: block; text-align: left; }
 
 .card {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 20px 30px;
+    border-radius: var(--radius);
+    padding: clamp(14px, 2vh, 20px) clamp(18px, 2.2vw, 30px);
     box-shadow: var(--shadow-lg);
-    margin-bottom: 20px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: clamp(12px, 1.6vh, 20px);
     overflow: visible;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
+/* No hover-lift. That gesture is the portal's affordance for a CLICKABLE tool
+   card; on a form container it promises an interaction that does not exist. */
 
 .card h2 {
-    font-size: 1.5rem;
+    font-family: var(--font-display);
+    font-size: 1.06rem;
     margin-bottom: 10px;
     margin-top: 0;
     color: var(--text-primary);
     font-weight: 600;
+    letter-spacing: -0.015em;
 }
 
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: clamp(12px, 1.8vh, 20px);
 }
 
 .form-group label {
@@ -160,13 +225,21 @@ header h1 {
     font-size: 0.95rem;
 }
 
-.file-label {
+ /* Sized to what it does. It used to stretch with the card, which left a
+    320px dashed box holding one line of text pinned to its top-left.
+    Scoped to .form-group so it outweighs `.form-group label{display:block}`
+    above - without that the flex centring never applied and the icon and
+    caption sat against the top padding instead of the middle of the box. */
+.form-group .file-label {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 40px 20px;
+    gap: 10px;
+    text-align: center;
+    padding: 28px 20px;
     border: 2px dashed var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-color);
     cursor: pointer;
     transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -192,8 +265,9 @@ header h1 {
 }
 
 .file-icon {
-    font-size: 2.5rem;
-    margin-right: 15px;
+    font-size: 1.6rem;
+    line-height: 1;
+    flex: 0 0 auto;
 }
 
 .file-text {
@@ -206,19 +280,25 @@ header h1 {
     color: var(--link-color);
 }
 
-/* Input Method Selector - Tab Style */
+/* Input Method Selector - segmented control.
+
+   The active segment is a RAISED surface, not an accent fill. Accent stays
+   reserved for Validate: this control only picks how you supply the document,
+   so a saturated fill spanning half the card would make a mode switch louder
+   than the page's actual primary action. The accent appears here only as the
+   label colour and a hairline ring, which is enough to say "this one" without
+   competing. */
+ /* Two buttons, not tabs. A tab switches between views of one thing; this
+    picks one of two ways to supply the document, which is what a segmented
+    control is for. The original was that, but wrapped in a bordered band around
+    two filled boxes - the weight was the problem, not the control. */
 .input-method-selector {
     display: flex;
-    gap: 0;
-    margin-bottom: 20px;
-    background: var(--primary-bg-08);
-    border-radius: 8px;
-    padding: 4px;
-    border: 1px solid var(--border-color);
+    gap: 8px;
 }
 
 .method-tab {
-    flex: 1;
+    display: flex;
     cursor: pointer;
     user-select: none;
     position: relative;
@@ -235,49 +315,92 @@ header h1 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 20px;
-    border-radius: 6px;
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    min-height: 38px;
+    padding: 0 16px;
+    line-height: 1;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--ws-soft);
     color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 0.95rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
-.method-tab:not(.active) .method-tab-content {
-    background: transparent;
+.method-tab:hover .method-tab-content {
+    color: var(--text-primary);
+    border-color: var(--accent);
 }
 
 .method-tab.active .method-tab-content {
-    background: var(--bg-color);
-    color: var(--primary-color);
-    font-weight: 600;
-    box-shadow: var(--shadow);
+    background: var(--brand-bg-10);
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
-.method-tab:not(.active):hover .method-tab-content {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.5);
+.method-tab input[type="radio"]:focus-visible + .method-tab-content {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
 }
+
 
 .method-icon {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    line-height: 1;
+    flex: 0 0 auto;
 }
 
 .method-text {
     font-size: 0.95rem;
+    line-height: 1;
 }
 
-/* Paste Content Textarea with Line Numbers */
+/* Paste Content Textarea with Line Numbers.
+
+   The editor takes the height that is left rather than a fixed one. It used to
+   be a rows="15" textarea inside a max-height:400px wrapper - 366px of pure
+   fixed pixels, 48% of the card, that did not shrink on a short screen and did
+   not grow on a tall one. On a 1366x768 laptop that put the Validate button
+   ~190px below the fold.
+
+   The clamp floor keeps it usable when the page has fallen out of the lock and
+   is scrolling; the flex is what fills a locked screen. */
 .textarea-wrapper {
     position: relative;
     display: flex;
+    flex: 1 1 auto;
+    min-height: clamp(140px, 22vh, 420px);
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--primary-bg-03);
+    border-radius: var(--radius-sm);
+    background: var(--ws-code-bg);
     transition: border-color 0.3s;
-    max-height: 400px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
+}
+
+/* Whichever input group is showing absorbs the slack; .is-hidden wins over
+   both because it is display:none !important. */
+#pasteContentGroup,
+#fileUploadGroup {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+#fileUploadGroup .file-label {
+    flex: 0 0 auto;
+    min-height: 132px;
+}
+
+/* Only the paste editor earns the leftover height; a drop zone does not get
+   better by being taller, so in file mode the card takes its natural size - and
+   the leftover then all collects below it, leaving the controls against the h1.
+   The extra offset spends part of that gap and costs the editor nothing, because
+   it only applies while the editor is hidden. */
+@supports selector(:has(*)) {
+    .upload-section:has(#fileUploadGroup:not(.is-hidden)) {
+        flex: 0 0 auto;
+        padding-top: clamp(20px, 9.5vh, 100px);
+    }
 }
 
 .textarea-wrapper:focus-within {
@@ -289,36 +412,78 @@ header h1 {
     background: var(--primary-bg-05);
     padding: 12px 8px;
     text-align: right;
-    font-family: 'Courier New', monospace;
-    font-size: 0.95rem;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
     color: var(--text-secondary);
     user-select: none;
     min-width: 40px;
     border-right: 1px solid var(--border-color);
     overflow: hidden;
-    line-height: 1.6;
+    line-height: 1.55;
+    /* The gutter renders as many numbers as currently fit, so without this its
+       own content becomes the pane's minimum height and the pane can never
+       shrink again - it fills, the numbers prop it open, and the Validate
+       button is pushed off the bottom. min-height:0 keeps the gutter a
+       passenger: .textarea-wrapper's own clamp is what sets the floor. */
+    min-height: 0;
 }
 
 .line-number {
     padding: 0 4px;
-    min-height: 1.6em;
+    min-height: 1.55em;
+    line-height: 1.55;
+}
+
+.editor-surface {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+}
+
+.paste-highlight,
+.paste-textarea {
+    padding: 12px 15px;
+    font-size: 0.88rem;
+    font-family: var(--font-mono);
+    /* Must match .line-numbers and the transformer's editor exactly, or the
+       gutter drifts out of step with the text it numbers. */
+    line-height: 1.55;
+    tab-size: 2;
+    white-space: pre;
+    overflow-wrap: normal;
+}
+
+/* Painted layer: never scrolls itself, app.js drives it from the textarea. */
+.paste-highlight {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+    color: var(--ws-code-fg);
 }
 
 .paste-textarea {
+    position: relative;
     flex: 1;
     width: 100%;
-    padding: 12px 15px;
     border: none;
     background: transparent;
-    font-size: 0.95rem;
-    font-family: 'Courier New', monospace;
-    color: var(--text-primary);
+    /* The glyphs come from the layer below; only the caret and the selection
+       are drawn by the textarea itself. */
+    color: transparent;
+    caret-color: var(--text-primary);
     resize: none;
-    min-height: 200px;
-    max-height: none;
+    min-height: 0;
     transition: none;
-    line-height: 1.6;
-    overflow-y: auto;
+    overflow: auto;
+}
+
+.paste-textarea::selection {
+    background: color-mix(in srgb, var(--accent) 35%, transparent);
+    color: inherit;
 }
 
 .paste-textarea:focus-visible {
@@ -337,6 +502,8 @@ header h1 {
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
+    font-size: 0.7rem;
+    line-height: 1;
     color: var(--text-secondary);
     font-size: 0.8rem;
 }
@@ -351,8 +518,8 @@ header h1 {
     width: 100%;
     padding: 12px 40px 12px 15px;
     border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    background: var(--ws-raised);
     font-size: 1rem;
     color: var(--text-primary);
     cursor: pointer;
@@ -391,10 +558,10 @@ header h1 {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--card-bg);
+    background: var(--card);
     border: 2px solid var(--border-color);
     border-top: none;
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     max-height: 400px;
     overflow: hidden;
     z-index: 1000;
@@ -424,8 +591,8 @@ header h1 {
     width: 100%;
     padding: 10px 40px 10px 15px;
     border: 2px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    background: var(--ws-raised);
     font-size: 0.95rem;
     color: var(--text-primary);
     transition: border-color 0.3s;
@@ -447,8 +614,9 @@ header h1 {
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
+    font-size: 0.85rem;
+    line-height: 1;
     color: var(--text-secondary);
-    font-size: 0.9rem;
 }
 
 .rule-filter-options {
@@ -489,7 +657,8 @@ header h1 {
     padding: 12px 15px;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
-    transition: background-color 0.2s;
+    border-left: 3px solid transparent;
+    transition: background-color 0.2s, border-color 0.2s;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -500,12 +669,25 @@ header h1 {
 }
 
 .rule-item:hover {
-    background: var(--bg-color);
+    background: var(--ws-raised);
+}
+
+.rule-item:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: -3px;
 }
 
 .rule-item.selected {
-    background: var(--primary-bg-10);
-    border-left: 3px solid var(--primary-color);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    border-left-color: var(--accent);
+}
+
+.rule-item.selected .rule-item-name {
+    color: var(--accent);
+}
+
+.rule-item.selected:hover {
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
 }
 
 .rule-item-name {
@@ -545,26 +727,19 @@ header h1 {
     font-size: 0.85rem;
 }
 
+/* .btn-primary itself is in tools-theme.css; it carried a second, differently
+   sized implementation here. Three overrides earn their place: this page's
+   submit is the full width of its card, it is a little larger because it is the
+   page's single most important control, and its disabled state means NOT READY
+   (no rule picked, no document) rather than busy - so it reads as an outlined
+   placeholder instead of a dimmed button. */
 .btn-primary {
-    width: 100%;
-    padding: 14px 24px;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 12px 26px;
+    font-size: 0.95rem;
     gap: 10px;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--primary-focus-03);
 }
 
@@ -572,13 +747,18 @@ header h1 {
     transform: translateY(0);
 }
 
+ /* Reads as unavailable rather than merely quiet: at full opacity on a raised
+    surface it looked like a normal button. */
 .btn-primary:disabled {
-    background: var(--primary-bg-50);
-    cursor: not-allowed;
-    opacity: 0.7;
+    background: transparent;
+    color: var(--muted2);
+    border: 1px dashed var(--border-color);
+    opacity: 1;
 }
 
 .btn-loader {
+    font-size: 0.95rem;
+    line-height: 1;
     animation: spin 1s linear infinite;
 }
 
@@ -610,7 +790,7 @@ header h1 {
 }
 
 .result-section .card h2 {
-    color: var(--primary-hover);
+    color: var(--text-primary);
     border-bottom: 2px solid var(--brand-border-20);
     padding-bottom: 15px;
     margin-bottom: 25px;
@@ -622,22 +802,22 @@ header h1 {
 
 /* Validation Summary Styles */
 .validation-summary-message {
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    font-size: 1.05rem;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 18px;
+    font-size: 0.92rem;
     line-height: 1.6;
 }
 
 .validation-summary-message.success {
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--ws-ok-bg);
+    color: var(--ws-ok-fg);
     border-left: 4px solid var(--success-color);
 }
 
 .validation-summary-message.error {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--ws-err-bg);
+    color: var(--ws-err-fg);
     border-left: 4px solid var(--error-color);
 }
 
@@ -650,9 +830,10 @@ header h1 {
 }
 
 .section-title {
-    font-size: 1.3rem;
+    font-family: var(--font-display);
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--primary-hover);
+    color: var(--text-primary);
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 2px solid var(--brand-border-30);
@@ -662,28 +843,28 @@ header h1 {
     width: 100%;
     border-collapse: collapse;
     background: var(--card-bg);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
     box-shadow: var(--shadow);
 }
 
 .validation-summary-table thead {
-    background: var(--brand-bg-10);
+    background: var(--ws-recess);
 }
 
 .validation-summary-table th {
-    padding: 12px 15px;
+    padding: 9px 14px;
     text-align: left;
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--primary-hover);
+    color: var(--text-primary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 2px solid var(--brand-border-30);
 }
 
 .validation-summary-table td {
-    padding: 12px 15px;
+    padding: 9px 14px;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-primary);
     font-size: 0.95rem;
@@ -714,7 +895,7 @@ header h1 {
     margin-bottom: 25px;
     padding: 15px;
     background: var(--brand-bg-05);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border-left: 4px solid var(--primary-hover);
     border-top: 1px solid var(--brand-border-20);
     border-right: 1px solid var(--brand-border-20);
@@ -722,68 +903,70 @@ header h1 {
 }
 
 .detail-group-title {
-    font-size: 1.1rem;
+    font-family: var(--font-display);
+    font-size: 1.02rem;
     font-weight: 600;
-    color: var(--primary-hover);
+    color: var(--text-primary);
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--brand-border-30);
 }
 
 .validation-item {
-    padding: 12px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
     margin-bottom: 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     border-left: 4px solid;
 }
 
 .validation-item.error {
-    background: #fee2e2;
+    background: var(--ws-err-bg);
     border-color: var(--error-color);
 }
 
 .validation-item.warning {
-    background: #fef3c7;
-    border-color: #f59e0b;
-    color: #92400e;
+    background: var(--ws-warn-bg);
+    border-color: var(--ws-warn);
+    color: var(--ws-warn-fg);
 }
 
 .validation-item.warning .validation-item-title {
-    color: #92400e;
+    color: var(--ws-warn);
 }
 
 .validation-item.warning .validation-item-message {
-    color: #78350f;
+    color: var(--ws-warn-fg);
 }
 
 .validation-item.success {
-    background: #d1fae5;
+    background: var(--ws-ok-bg);
     border-color: var(--success-color);
-    color: #065f46;
+    color: var(--ws-ok-fg);
 }
 
 .validation-item.success .validation-item-title {
-    color: #065f46;
+    color: var(--ws-ok);
 }
 
 .validation-item.success .validation-item-message {
-    color: #065f46;
+    color: var(--ws-ok-fg);
     font-style: italic;
 }
 
 .validation-item.skipped {
-    background: #fef3c7;
-    border-color: #f59e0b;
-    color: #92400e;
+    background: var(--ws-warn-bg);
+    border-color: var(--ws-warn);
+    color: var(--ws-warn-fg);
 }
 
 .validation-item.skipped .validation-item-title {
-    color: #92400e;
+    color: var(--ws-warn);
     font-weight: 600;
 }
 
 .validation-item.skipped .validation-item-message {
-    color: #78350f;
+    color: var(--ws-warn-fg);
     font-style: italic;
 }
 
@@ -794,22 +977,25 @@ header h1 {
 }
 
 .validation-item-message {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
     line-height: 1.5;
 }
 
 .json-viewer {
-    background: #1e293b;
-    color: #e2e8f0;
+    background: var(--ws-json-bg);
+    color: var(--ws-json-fg);
     padding: 20px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow-x: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
     line-height: 1.6;
     margin-top: 15px;
-    max-height: 400px;
+    /* No max-height. The region this sits in scrolls; capping the viewer as
+       well produced a scrollbar inside a scrollbar and dead space on a tall
+       screen. The rule dropdown below keeps its cap - a popover is a different
+       case and must not grow past the viewport. */
     overflow-y: auto;
 }
 
@@ -841,9 +1027,9 @@ header h1 {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: var(--bg-color);
+    background: var(--ws-raised);
     border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 0.95rem;
     font-weight: 500;
@@ -854,7 +1040,7 @@ header h1 {
 
 .action-btn:hover {
     background: var(--primary-color);
-    color: white;
+    color: var(--accent-fg);
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--primary-focus-03);
@@ -865,55 +1051,18 @@ header h1 {
     box-shadow: 0 2px 6px var(--primary-focus-02);
 }
 
+/* ---------------- icons ----------------
+   Every icon on this page is an inline SVG on currentColor. They used to be
+   emoji, which render per-OS, ignore the colour the surrounding rule sets, and
+   read as a different visual register from the line icons the portal and the
+   other two tools use. Sized here so one place governs them. */
 .action-btn .btn-icon {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
+    line-height: 1;
 }
 
-
-footer {
-    background: #ffffff;
-    border-top: 1px solid var(--border-color);
-    margin-top: 60px;
-    padding: 30px 20px;
-    text-align: center;
-    position: relative;
-    z-index: 0;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-footer p {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin: 0;
-    line-height: 1.6;
-}
-
-footer .footer-brand {
-    font-weight: 500;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-}
-
-footer .footer-tech {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    opacity: 0.8;
-}
-
-footer .footer-link {
-    color: var(--link-color);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-footer .footer-link:hover {
-    color: var(--link-hover);
-    text-decoration: underline;
-}
+/* Inherits the per-severity colour .validation-item.error/.warning/.success
+   already sets on the title - which is exactly what an emoji could not do. */
 
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -935,33 +1084,8 @@ footer .footer-link:hover {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .top-bar {
-        padding: 6px 0;
-    }
-    
-    .top-bar .logo-container img {
-        max-height: 40px;
-        height: auto;
-    }
-    
-    .header-content {
-        padding: 0 15px;
-    }
-    
-    header h1 {
-        font-size: 1.75rem;
-    }
-    
-    .subtitle {
-        font-size: 0.9rem;
-    }
-    
     .card {
         padding: 20px;
-    }
-    
-    footer {
-        padding: 20px 15px;
     }
     
     .action-buttons {
@@ -978,4 +1102,81 @@ footer .footer-link:hover {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ---------------- focus, added with the Docnaut restyle ----------------
+   Several of these controls had no visible focus state at all. Portal standard:
+   a 3px accent outline. Hover and :focus-visible are kept separate so a mouse
+   click never paints a ring. */
+.method-tab:has(input:focus-visible) .method-tab-content,
+.file-label:has(input:focus-visible),
+.filter-checkbox-label:has(input:focus-visible) {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+@supports not selector(:has(*)) {
+    .method-tab:focus-within .method-tab-content,
+    .file-label:focus-within,
+    .filter-checkbox-label:focus-within {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+    }
+}
+
+.btn-primary:focus-visible,
+.action-btn:focus-visible,
+.rule-item:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* app.js sets this instead of the two hardcoded hexes it used to write inline. */
+.file-text.has-file {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+/* The loader is shown by removing .is-hidden, so its own display must be
+   declared here rather than assigned inline. */
+.btn-loader {
+    display: inline-block;
+}
+
+/* ---------------- compact footer ----------------
+   .ftr-compact in tools-theme.css puts brand, engine credit and links on one
+   row. Nothing else to do here. */
+
+/* ---------------- XML syntax ----------------
+   The --x-* stops are in tools-theme.css: this page and the transformer both
+   highlight XML, and they carried separate copies that agreed on five stops and
+   disagreed on the sixth, so a processing instruction was purple here and
+   magenta there. */
+.x-tag { color: var(--x-tag); }
+.x-attr { color: var(--x-attr); }
+.x-val { color: var(--x-val); }
+.x-punc { color: var(--x-punc); }
+.x-comment { color: var(--x-comment); font-style: italic; }
+.x-meta { color: var(--x-meta); }
+
+/* Search hits inside the rule list. The UA default is a yellow block that has
+   no relationship to this palette and fails contrast in dark mode, so it is
+   replaced rather than tinted. */
+.rule-item mark {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+    color: inherit;
+    border-radius: 3px;
+    padding: 0 1px;
+}
+
+/* The arrow-key highlight. Distinct from :hover so a keyboard user can see
+   where they are while the mouse sits somewhere else entirely, and from
+   .selected so "what I am on" never reads as "what I chose". */
+.rule-item.is-active {
+    background: var(--ws-raised);
+    box-shadow: inset 3px 0 0 0 var(--accent);
+}
+
+.rule-item.is-active.selected {
+    background: color-mix(in srgb, var(--accent) 24%, transparent);
 }
