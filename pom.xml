@@ -17,8 +17,8 @@
     <maven.compiler.release>25</maven.compiler.release>
     
     <!-- PHIVE versions -->
-    <phive.version>11.1.1</phive.version>
-    <phive-rules.version>4.1.2</phive-rules.version>
+    <phive.version>12.0.3</phive.version>
+    <phive-rules.version>4.3.2</phive-rules.version>
     
     <!-- Servlet API -->
     <servlet-api.version>6.0.0</servlet-api.version>
